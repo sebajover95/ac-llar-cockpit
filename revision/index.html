@@ -7,31 +7,34 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230F172A'/%3E%3Crect x='23' y='8' width='18' height='8' rx='4' fill='%23F8FAFC'/%3E%3Crect x='12' y='14' width='40' height='44' rx='6' fill='%23F8FAFC'/%3E%3Cpath d='M20 30 L27 37 L42 22' fill='none' stroke='%230F172A' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3Crect x='20' y='42' width='24' height='5' rx='2.5' fill='%230F172A'/%3E%3Crect x='20' y='50' width='18' height='5' rx='2.5' fill='%230F172A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--P:#E8640A;--OK:#16A34A;--DM:#DC2626;--WA:#D97706;--BG:#FFF7F2;--WH:#fff;--GR:#9CA3AF;--BD:#FFE4D0;--TX:#374151;}
+:root{--P:#E8640A;--OK:#16A34A;--DM:#DC2626;--WA:#D97706;--BG:#F4F5F7;--WH:#fff;--GR:#6B7280;--BD:#E5E7EB;--TX:#1F2937;--INK:#111827;--SEL:#1F2937;}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:var(--BG);color:var(--TX);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+html,body{background:var(--BG);color:var(--TX);font-family:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 body{min-height:100vh;max-width:520px;margin:0 auto;padding-bottom:80px}
 input,button,textarea,select{font-family:inherit;font-size:inherit}
 button{background:none;border:none;cursor:pointer;color:inherit;font-weight:600}
 button:disabled{opacity:.5;cursor:not-allowed}
-.hdr{background:var(--WH);color:var(--TX);padding:12px 16px;border-bottom:1px solid #EEE7E1}
+.hdr{background:var(--WH);color:var(--TX);padding:12px 16px;border-bottom:1px solid var(--BD)}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--BD);background:var(--WH);color:var(--GR);display:flex;align-items:center;justify-content:center}
 .hdr .logo{height:34px;width:auto;display:block}
 .hdr-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.hdr h1{font-size:20px;font-weight:800;letter-spacing:1px}
+.hdr h1{font-size:18px;font-weight:700;letter-spacing:0;color:var(--INK)}
 .hdr .sub{font-size:10px;opacity:.85;margin-top:1px}
-.btn-emergency{background:#FEE2E2;color:var(--DM);border:2px solid var(--DM);border-radius:20px;padding:6px 12px;font-weight:800;font-size:12px}
-.tabs{display:flex;background:var(--WH);border-bottom:2px solid var(--BD)}
-.tab{flex:1;padding:12px 4px;font-weight:700;font-size:13px;color:var(--GR);border:none;background:none;border-bottom:3px solid transparent;cursor:pointer}
+.btn-emergency{background:#FEE2E2;color:var(--DM);border:2px solid var(--DM);border-radius:20px;padding:6px 12px;font-weight:700;font-size:12px}
+.tabs{display:flex;background:var(--WH);border-bottom:1px solid var(--BD)}
+.tab{flex:1;padding:12px 4px;font-weight:600;font-size:13px;color:var(--GR);border:none;background:none;border-bottom:3px solid transparent;cursor:pointer}
 .tab.active{color:var(--P);border-bottom-color:var(--P)}
 .container{padding:16px}
-.search-input{width:100%;padding:12px 14px;border:1.5px solid var(--BD);border-radius:10px;font-size:15px;outline:none;background:var(--WH);color:var(--TX);margin-bottom:12px}
+.search-input{width:100%;padding:12px 14px;border:1px solid var(--BD);border-radius:10px;font-size:15px;outline:none;background:var(--WH);color:var(--TX);margin-bottom:12px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.chip{padding:8px 14px;border:1.5px solid var(--BD);border-radius:20px;background:var(--WH);color:var(--TX);font-weight:600;font-size:13px}
-.chip.active{background:var(--P);color:var(--WH);border-color:var(--P)}
-.card{background:var(--WH);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);cursor:pointer}
+.chip{padding:7px 14px;border:1px solid var(--BD);border-radius:20px;background:var(--WH);color:var(--TX);font-weight:600;font-size:13px}
+.chip.active{background:var(--SEL);color:var(--WH);border-color:var(--SEL)}
+.card{background:var(--WH);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--BD);cursor:pointer}
 .card.veh{display:flex;justify-content:space-between;align-items:center}
-.card .veh-id{font-weight:800;font-size:17px;color:var(--P)}
+.card .veh-id{font-weight:700;font-size:16px;color:var(--INK)}
 .card .veh-info{font-size:13px;color:var(--TX);margin-top:2px}
 .card .veh-plate{font-size:11px;color:var(--GR);margin-top:2px;font-family:monospace}
 .card-arrow{color:var(--GR);font-size:22px}
@@ -45,65 +48,65 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .modal-title{font-weight:700;font-size:17px;margin-bottom:8px}
 .modal-buttons{display:flex;gap:8px;margin-top:16px}
 .btn-primary{flex:1;padding:12px;border-radius:10px;background:var(--P);color:var(--WH);font-weight:700;font-size:14px;border:none}
-.btn-secondary{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--BD);background:var(--WH);color:var(--TX);font-weight:600;font-size:14px}
+.btn-secondary{flex:1;padding:12px;border-radius:10px;border:1px solid var(--BD);background:var(--WH);color:var(--TX);font-weight:600;font-size:14px}
 .btn-danger{flex:1;padding:12px;border-radius:10px;background:var(--DM);color:var(--WH);font-weight:700;font-size:14px;border:none}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--TX);color:var(--WH);padding:12px 20px;border-radius:24px;font-weight:600;font-size:14px;z-index:500;box-shadow:0 4px 12px rgba(0,0,0,.3);max-width:90%;text-align:center}
 .toast.err{background:var(--DM)}
 .toast.ok{background:var(--OK)}
-.insp-hdr{background:var(--P);color:var(--WH);padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
-.insp-hdr .back-btn{background:none;color:var(--WH);font-size:26px;padding:0;border:none;line-height:1}
+.insp-hdr{background:var(--WH);color:var(--INK);border-bottom:1px solid var(--BD);padding:12px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+.insp-hdr .back-btn{background:none;color:var(--INK);font-size:26px;padding:0;border:none;line-height:1}
 .insp-hdr .veh-title{flex:1;min-width:0;overflow:hidden}
 .insp-hdr .veh-title>div:first-child{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.insp-hdr .veh-title>div:last-child{font-size:11px;opacity:.75}
-.insp-hdr .badge{background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700}
-.insp-tabs{display:flex;background:var(--WH);border-bottom:2px solid var(--BD);position:sticky;top:56px;z-index:49}
-.insp-tab{flex:1;padding:10px 2px;font-size:11px;font-weight:700;color:var(--GR);border:none;background:none;text-align:center;border-bottom:3px solid transparent;position:relative}
+.insp-hdr .veh-title>div:last-child{font-size:11px;color:var(--GR)}
+.insp-hdr .badge{background:#FFEDD5;color:#9A3412;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700}
+.insp-tabs{display:flex;background:var(--WH);border-bottom:1px solid var(--BD);position:sticky;top:56px;z-index:49}
+.insp-tab{flex:1;padding:12px 2px;font-size:12px;font-weight:600;color:var(--GR);border:none;background:none;text-align:center;border-bottom:3px solid transparent;position:relative}
 .insp-tab.active{color:var(--P);border-bottom-color:var(--P)}
 .insp-tab .bdg{position:absolute;top:2px;right:8px;background:var(--DM);color:var(--WH);border-radius:8px;padding:1px 5px;font-size:9px}
-.zone-title{font-weight:700;font-size:12px;color:var(--WH);background:#374151;border-radius:8px;padding:6px 12px;margin:8px 0}
-.item-card{background:var(--WH);border-radius:10px;padding:10px 12px;margin-bottom:6px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.zone-title{font-weight:600;font-size:11px;color:var(--GR);text-transform:uppercase;letter-spacing:.8px;padding:14px 2px 6px;margin:0}
+.item-card{background:var(--WH);border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--BD)}
 .item-name{font-weight:600;font-size:14px;color:var(--TX);margin-bottom:6px}
 .item-btns{display:flex;gap:6px}
-.item-btn{flex:1;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1.5px solid var(--BD);background:var(--WH);color:var(--GR)}
+.item-btn{flex:1;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1px solid var(--BD);background:var(--WH);color:var(--GR)}
 .item-btn.ok{background:#DCFCE7;color:#166534;border-color:#86EFAC}
 .item-btn.na{background:#F3F4F6;color:var(--GR);border-color:#D1D5DB}
 .item-btn.dmg{background:var(--DM);color:var(--WH);border-color:var(--DM)}
-.item-btn.ok.selected,.item-btn.na.selected,.item-btn.dmg.selected{box-shadow:0 0 0 3px rgba(232,100,10,.3)}
+.item-btn.ok.selected,.item-btn.na.selected,.item-btn.dmg.selected{box-shadow:0 0 0 2px rgba(17,24,39,.25)}
 .dmg-info{margin-top:8px;padding:8px;background:#FEF2F2;border-radius:8px;border-left:3px solid var(--DM);font-size:12px}
 .dmg-photos{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .dmg-photos img{width:44px;height:44px;object-fit:cover;border-radius:6px}
 .field-label{font-size:10px;color:var(--GR);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:4px}
-.field-value{padding:10px 12px;border:1.5px solid var(--BD);border-radius:8px;background:var(--WH);font-size:14px;color:var(--TX);width:100%;outline:none}
+.field-value{padding:10px 12px;border:1px solid var(--BD);border-radius:8px;background:var(--WH);font-size:14px;color:var(--TX);width:100%;outline:none}
 .field-row{margin-bottom:12px}
 .chips-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.chip-small{padding:8px 4px;text-align:center;border:1.5px solid var(--BD);border-radius:8px;background:var(--WH);font-size:12px;font-weight:600;cursor:pointer}
-.chip-small.active{background:var(--P);color:var(--WH);border-color:var(--P)}
+.chip-small{padding:8px 4px;text-align:center;border:1px solid var(--BD);border-radius:8px;background:var(--WH);font-size:12px;font-weight:600;cursor:pointer}
+.chip-small.active{background:var(--SEL);color:var(--WH);border-color:var(--SEL)}
 .chips-row{display:flex;gap:6px;flex-wrap:wrap}
-.yn-btn{flex:1;padding:10px;border:1.5px solid var(--BD);border-radius:8px;background:var(--WH);font-size:13px;font-weight:600;cursor:pointer}
+.yn-btn{flex:1;padding:10px;border:1px solid var(--BD);border-radius:8px;background:var(--WH);font-size:13px;font-weight:600;cursor:pointer}
 .yn-btn.yes{background:#DCFCE7;color:#166534;border-color:#86EFAC}
 .yn-btn.no{background:#FEE2E2;color:var(--DM);border-color:#FCA5A5}
 .footer-btn{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;background:var(--WH);border-top:1.5px solid var(--BD);padding:12px 16px;z-index:100}
-.footer-btn button{width:100%;padding:14px;border-radius:12px;background:var(--P);color:var(--WH);font-weight:800;font-size:15px;border:none}
+.footer-btn button{width:100%;padding:14px;border-radius:12px;background:var(--P);color:var(--WH);font-weight:700;font-size:15px;border:none}
 .summary-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
-.stat-card{background:var(--WH);border-radius:10px;padding:12px;text-align:center}
-.stat-n{font-size:24px;font-weight:800;color:var(--P)}
+.stat-card{background:var(--WH);border-radius:10px;padding:12px;text-align:center;border:1px solid var(--BD)}
+.stat-n{font-size:24px;font-weight:700;color:var(--INK)}
 .stat-l{font-size:11px;color:var(--GR);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 .dmg-form{display:flex;flex-direction:column;gap:10px}
 .dmg-form-section{margin-bottom:10px}
-.dmg-form-title{font-size:11px;font-weight:800;color:var(--GR);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.dmg-form-title{font-size:11px;font-weight:700;color:var(--GR);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .photo-input-btn{display:block;padding:14px;border:2px dashed var(--BD);border-radius:10px;text-align:center;color:var(--TX);background:#F1F5F9;cursor:pointer;font-weight:700}
 .photo-input-btn input{display:none}
 .photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .photo-item{position:relative;aspect-ratio:1}
 .photo-item img{width:100%;height:100%;object-fit:cover;border-radius:6px}
-.photo-item .del{position:absolute;top:4px;right:4px;background:var(--DM);color:var(--WH);width:20px;height:20px;border-radius:10px;font-size:14px;line-height:16px;text-align:center;font-weight:800}
+.photo-item .del{position:absolute;top:4px;right:4px;background:var(--DM);color:var(--WH);width:20px;height:20px;border-radius:10px;font-size:14px;line-height:16px;text-align:center;font-weight:700}
 .badge-count{position:absolute;top:2px;right:8px;background:var(--DM);color:var(--WH);border-radius:8px;padding:1px 5px;font-size:9px;font-weight:700}
 .dmg-summary-row{background:var(--WH);border-radius:10px;padding:10px 12px;margin-bottom:6px;border-left:4px solid var(--DM)}
 .spinner{display:inline-block;width:20px;height:20px;border:2px solid #f3f3f3;border-top:2px solid var(--P);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle}
 @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.hist-item{background:var(--WH);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.hist-item{background:var(--WH);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--BD)}
 .hist-item .hist-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.hist-item .hist-veh{font-weight:800;font-size:15px;color:var(--P)}
+.hist-item .hist-veh{font-weight:700;font-size:15px;color:var(--INK)}
 .hist-item .hist-info{font-size:12px;color:var(--TX);margin-top:2px}
 .hist-item .hist-date{font-size:11px;color:var(--GR);margin-top:4px}
 .hist-item .hist-stats{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
@@ -118,20 +121,20 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .hist-btn-download{background:#F0FDF4;color:var(--OK);border:1px solid #BBF7D0}
 .hist-btn-edit{background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD}
 .hist-btn-delete{background:#FEE2E2;color:var(--DM);border:1px solid #FCA5A5}
-.settings-section{background:var(--WH);border-radius:12px;padding:16px;margin-bottom:12px}
+.settings-section{background:var(--WH);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--BD)}
 .settings-title{font-weight:700;font-size:14px;margin-bottom:8px;color:var(--TX)}
 .settings-desc{font-size:12px;color:var(--GR);margin-bottom:12px;line-height:1.4}
-.settings-btn{width:100%;padding:12px;border:1.5px solid var(--BD);border-radius:10px;background:var(--WH);color:var(--TX);font-weight:700;font-size:13px;margin-bottom:8px}
+.settings-btn{width:100%;padding:12px;border:1px solid var(--BD);border-radius:10px;background:var(--WH);color:var(--TX);font-weight:700;font-size:13px;margin-bottom:8px}
 .settings-btn.primary{background:var(--P);color:var(--WH);border-color:var(--P)}
 .overlay-full{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px}
 .overlay-full-content{background:var(--WH);border-radius:16px;padding:28px 24px;text-align:center;max-width:320px}
 .overlay-full-icon{font-size:44px;margin-bottom:10px}
-.overlay-full-title{font-weight:800;font-size:17px;color:var(--TX);margin-bottom:6px}
+.overlay-full-title{font-weight:700;font-size:17px;color:var(--TX);margin-bottom:6px}
 .overlay-full-sub{font-size:13px;color:var(--GR);line-height:1.5}
 .cached-banner{background:#EFF6FF;border:1.5px solid #93C5FD;border-radius:10px;padding:10px 12px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:10px}
 .copy-dmg-item{display:flex;gap:10px;padding:10px;margin-bottom:8px;border-radius:10px;border:2px solid var(--BD);background:var(--WH);cursor:pointer;align-items:center}
 .copy-dmg-item.selected{border-color:var(--P);background:#FFF7F2}
-.copy-dmg-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--BD);background:var(--WH);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--WH);font-weight:800;font-size:14px}
+.copy-dmg-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--BD);background:var(--WH);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--WH);font-weight:700;font-size:14px}
 .copy-dmg-check.checked{background:var(--P);border-color:var(--P)}
 .copy-dmg-thumb{width:48px;height:48px;object-fit:cover;border-radius:6px;flex-shrink:0}
 .copy-dmg-info{flex:1;min-width:0}
@@ -654,14 +657,14 @@ async function saveInspection(){
     // Recargar historial
     state.records=await dbGetAll('inspections');
     state.records.sort((a,b)=>new Date(b.date)-new Date(a.date));
-    toast('✅ Inspección guardada','ok');
+    toast('Inspección guardada','ok');
     state.currentInsp=null;
     state.editingId=null;
     state.view='home';
     state.tab='history';
     render();
   }catch(e){
-    toast('❌ Error al guardar: '+(e.message||e),'err');
+    toast('Error al guardar: '+(e.message||e),'err');
   }
 }
 
@@ -724,7 +727,7 @@ async function downloadReport(r){
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
     const fname=`OT · ${r.veh?.id||'SIN-ID'} · ${r.veh?.plate||''} (${revNum}).html`;
     downloadBlob(blob,fname);
-    toast('📥 Descargado como '+fname,'ok');
+    toast('Descargado como '+fname,'ok');
     render();
   }catch(e){
     toast('Error: '+(e.message||e),'err');
@@ -737,7 +740,7 @@ async function rescueAll(){
     if(all.length===0){toast('No hay inspecciones para rescatar');return;}
     const ts=new Date().toISOString().slice(0,16).replace(/[T:]/g,'-');
     downloadText(JSON.stringify(all,null,2),`RESCATE_${ts}.json`,'application/json');
-    toast('🆘 Rescate descargado','ok');
+    toast('Rescate descargado','ok');
   }catch(e){
     toast('Error: '+(e.message||e),'err');
   }
@@ -751,7 +754,7 @@ async function exportCache(){
     all.forEach(c=>{obj[c.vehId]={date:c.date,plate:c.plate,dmgs:c.dmgs};});
     const ts=new Date().toISOString().slice(0,10);
     downloadText(JSON.stringify(obj,null,2),`AC-LLAR_cache_${ts}.json`,'application/json');
-    toast('✅ Cache descargado','ok');
+    toast('Cache descargado','ok');
   }catch(e){
     toast('Error: '+(e.message||e),'err');
   }
@@ -768,7 +771,7 @@ async function clearAllInspections(){
       const ts=new Date().toISOString().slice(0,16).replace(/[T:]/g,'-');
       downloadText(JSON.stringify(state.records,null,2),`BACKUP_ANTES_DE_BORRAR_${ts}.json`,'application/json');
     }catch(e){
-      alert('⚠️ No se pudo descargar el backup. Se aborta el borrado. Detalle: '+(e.message||e));
+      alert('No se pudo descargar el backup. Se aborta el borrado. Detalle: '+(e.message||e));
       return;
     }
     // Recién ahora borro (SOLO el store 'inspections')
@@ -780,7 +783,7 @@ async function clearAllInspections(){
       tx.onerror=(e)=>reject(e.target.error);
     });
     state.records=[];
-    toast(`✅ ${count} inspecciones borradas. Backup guardado en Descargas.`,'ok');
+    toast(`${count} inspecciones borradas. Backup guardado en Descargas.`,'ok');
     render();
   }catch(e){
     toast('Error: '+(e.message||e),'err');
@@ -806,7 +809,7 @@ async function editSingleOffset(){
     newOffsets[vehId]=n;
     await dbPut('meta',{key:'revOffsets',value:newOffsets});
     state.revOffsets=newOffsets;
-    toast(`✅ ${vehId} → offset ${n}`,'ok');
+    toast(`${vehId} → offset ${n}`,'ok');
     render();
   }catch(e){
     toast('Error: '+(e.message||e),'err');
@@ -820,7 +823,7 @@ async function darDeBaja(vehId){
   try{
     state.bajas[vehId]=true;
     await dbPut('meta',{key:'bajas',value:state.bajas});
-    toast(`✅ ${vehId} dado de baja`,'ok');
+    toast(`${vehId} dado de baja`,'ok');
     render();
   }catch(e){toast('Error: '+(e.message||e),'err');}
 }
@@ -829,7 +832,7 @@ async function reactivar(vehId){
   try{
     delete state.bajas[vehId];
     await dbPut('meta',{key:'bajas',value:state.bajas});
-    toast(`✅ ${vehId} reactivado`,'ok');
+    toast(`${vehId} reactivado`,'ok');
     render();
   }catch(e){toast('Error: '+(e.message||e),'err');}
 }
@@ -846,7 +849,7 @@ async function importRevOffsets(file){
     });
     state.revOffsets=clean;
     await dbPut('meta',{key:'revOffsets',value:clean});
-    toast(`✅ ${Object.keys(clean).length} offsets cargados`,'ok');
+    toast(`${Object.keys(clean).length} offsets cargados`,'ok');
     render();
   }catch(e){
     toast('Error: '+(e.message||e),'err');
@@ -931,7 +934,7 @@ async function importFleetFile(file){
     if(newFleet.length===0){toast('No se pudo leer ningún vehículo','err');return;}
     state.fleet=newFleet;
     await dbPut('meta',{key:'fleet',value:newFleet});
-    toast(`✅ ${newFleet.length} vehículos cargados${errored>0?` (${errored} omitidos)`:''}`,'ok');
+    toast(`${newFleet.length} vehículos cargados${errored>0?` (${errored} omitidos)`:''}`,'ok');
     render();
   }catch(e){
     toast('Error: '+(e.message||e),'err');
@@ -975,7 +978,7 @@ async function importCache(file){
         added++;
       }
     }
-    const msg=`✅ ${added} agregados, ${replaced} actualizados${skipped>0?`, ${skipped} ignorados (más viejos que los existentes)`:''}`;
+    const msg=`${added} agregados, ${replaced} actualizados${skipped>0?`, ${skipped} ignorados (más viejos que los existentes)`:''}`;
     toast(msg,'ok');
     render();
   }catch(e){
@@ -999,7 +1002,7 @@ async function importInspections(file){
     }
     state.records=await dbGetAll('inspections');
     state.records.sort((a,b)=>new Date(b.date)-new Date(a.date));
-    toast(`✅ ${count} inspecciones importadas`,'ok');
+    toast(`${count} inspecciones importadas`,'ok');
     render();
   }catch(e){
     toast('Error: '+(e.message||e),'err');
@@ -1023,8 +1026,8 @@ function renderHome(){
       <div class="hdr-top">
         <div><img class="logo" src="logo-acllar.png" alt="AC·LLAR">${typeof nubePill==='function'?nubePill():''}</div>
         <div style="display:flex;gap:6px;align-items:center">
-          ${window.acRevEsAdmin && window.acRevEsAdmin() ? '<button class="btn-emergency" data-action="rescue">🆘 Rescate</button>' : ""}
-          <button class="btn-emergency" style="background:#F1F5F9;color:#374151;border-color:#CBD5E1" data-action="settings">⚙️</button>
+          ${window.acRevEsAdmin && window.acRevEsAdmin() ? '<button class="btn-emergency" data-action="rescue">Rescate</button>' : ""}
+          <button class="icon-btn" aria-label="Ajustes" data-action="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M10.3 4.3c.4-1.7 2.9-1.7 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.6c.9 1.5-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.5 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1c-1.5.9-3.3-.9-2.4-2.4a1.7 1.7 0 0 0-1-2.6c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
     </div>
@@ -1056,7 +1059,7 @@ function renderFleet(){
   });
   const sedes=['Todas','Valencia','Onil','Castellón','Alicante'];
   return `
-    <input class="search-input" id="search" placeholder="🔍 Buscar AC, matrícula o modelo..." value="${state.search}">
+    <input class="search-input" id="search" placeholder="Buscar AC, matrícula o modelo..." value="${state.search}">
     <div class="chips">
       ${sedes.map(s=>`<button class="chip ${state.sedeF===(s==='Todas'?'':s)?'active':''}" data-sede="${s==='Todas'?'':s}">${s}</button>`).join('')}
     </div>
@@ -1086,9 +1089,9 @@ function renderHistory(){
       <button class="chip ${!showAll?'active':''}" data-hist-filter="today">Hoy (${todayCount})</button>
       <button class="chip ${showAll?'active':''}" data-hist-filter="all">Todo (${state.records.length})</button>
     </div>
-    ${state.records.length>0?`<input class="search-input" id="hist-search" placeholder="🔍 Buscar AC o matrícula..." value="${state.histSearch||''}">`:''}
+    ${state.records.length>0?`<input class="search-input" id="hist-search" placeholder="Buscar AC o matrícula..." value="${state.histSearch||''}">`:''}
     ${filtered.length===0?`
-      <div class="empty"><div class="empty-icon">📋</div><div class="empty-title">${search?'Sin resultados':'Sin inspecciones'}</div><div class="empty-sub">${!search?'Empezá una revisión desde la pestaña Flota':''}</div></div>
+      <div class="empty"><div class="empty-title">${search?'Sin resultados':'Sin inspecciones'}</div><div class="empty-sub">${!search?'Empezá una revisión desde la pestaña Flota':''}</div></div>
     `:filtered.map(r=>{
       const g3=(r.dmgs||[]).filter(d=>d.gr==='G3').length;
       const g2=(r.dmgs||[]).filter(d=>d.gr==='G2').length;
@@ -1096,13 +1099,13 @@ function renderHistory(){
       return `<div class="hist-item">
         <div class="hist-top">
           <div style="flex:1">
-            <div class="hist-veh">${r.veh?.id||'?'}${r.revNum?` <span style="font-size:12px;background:#DBEAFE;color:#1E40AF;padding:2px 6px;border-radius:6px">(${r.revNum})</span>`:''} · <span style="color:#374151;font-weight:600">${r.veh?.plate||''}</span>${r.veh&&state.bajas[r.veh.id]?` <span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:2px 6px;border-radius:6px;font-weight:700">🚫 DADO DE BAJA</span>`:''}</div>
+            <div class="hist-veh">${r.veh?.id||'?'}${r.revNum?` <span style="font-size:12px;background:#DBEAFE;color:#1E40AF;padding:2px 6px;border-radius:6px">(${r.revNum})</span>`:''} · <span style="color:#374151;font-weight:600">${r.veh?.plate||''}</span>${r.veh&&state.bajas[r.veh.id]?` <span style="font-size:10px;background:#FEE2E2;color:#991B1B;padding:2px 6px;border-radius:6px;font-weight:700">DADO DE BAJA</span>`:''}</div>
             <div class="hist-info">${r.veh?.brand||''} ${r.veh?.model||''}</div>
-            <div class="hist-date">📅 ${fmtDate(r.date)}${r.editedAt?' · ✏️ Editada':''}</div>
+            <div class="hist-date">${fmtDate(r.date)}${r.editedAt?' · Editada':''}</div>
             ${typeof syncBadge==='function'?syncBadge(r):''}
-            ${(r.startedAt&&r.finishedAt)?`<div style="font-size:11px;color:#6B7280;margin-top:2px">🕐 ${fmtTime(r.startedAt)} → ${fmtTime(r.finishedAt)} <span style="color:#9CA3AF">(${fmtDur(r.startedAt,r.finishedAt)})</span></div>`:''}
-            ${r.km!=null?`<div style="font-size:11px;color:#6B7280;margin-top:2px">📍 ${r.km.toLocaleString('es-ES')} km</div>`:''}
-            ${r.notes&&r.notes.trim()?`<div style="font-size:11px;color:#B45309;margin-top:2px;background:#FEF3C7;border-radius:6px;padding:3px 8px;display:inline-block">📝 ${r.notes.trim().length>50?r.notes.trim().slice(0,50)+'…':r.notes.trim()}</div>`:''}
+            ${(r.startedAt&&r.finishedAt)?`<div style="font-size:11px;color:#6B7280;margin-top:2px">${fmtTime(r.startedAt)} → ${fmtTime(r.finishedAt)} <span style="color:#9CA3AF">(${fmtDur(r.startedAt,r.finishedAt)})</span></div>`:''}
+            ${r.km!=null?`<div style="font-size:11px;color:#6B7280;margin-top:2px">${r.km.toLocaleString('es-ES')} km</div>`:''}
+            ${r.notes&&r.notes.trim()?`<div style="font-size:11px;color:#B45309;margin-top:2px;background:#FEF3C7;border-radius:6px;padding:3px 8px;display:inline-block">${r.notes.trim().length>50?r.notes.trim().slice(0,50)+'…':r.notes.trim()}</div>`:''}
           </div>
         </div>
         <div class="hist-stats">
@@ -1112,9 +1115,9 @@ function renderHistory(){
           ${(r.dmgs||[]).length===0?`<span class="hist-stat ok">✓ Sin daños</span>`:''}
         </div>
         <div class="hist-actions">
-          <button class="hist-btn-download" data-action="download" data-id="${r.id}">💾 Descargar</button>
-          <button class="hist-btn-edit" data-action="edit" data-id="${r.id}">✏️ Editar</button>
-          <button class="hist-btn-delete" data-action="delete" data-id="${r.id}">🗑</button>
+          <button class="hist-btn-download" data-action="download" data-id="${r.id}">Descargar</button>
+          <button class="hist-btn-edit" data-action="edit" data-id="${r.id}">Editar</button>
+          <button class="hist-btn-delete" data-action="delete" data-id="${r.id}">Borrar</button>
         </div>
       </div>`;
     }).join('')}
@@ -1134,7 +1137,7 @@ function renderSettings(){
     </div>
     <div class="container">
       <div class="settings-section">
-        <div class="settings-title">📊 Datos actuales</div>
+        <div class="settings-title">Datos actuales</div>
         <div class="settings-desc">
           <b>Cache de daños:</b> ${cacheCount} vehículo${cacheCount!==1?'s':''}<br>
           <b>Inspecciones guardadas:</b> ${recCount}<br>
@@ -1142,16 +1145,16 @@ function renderSettings(){
         </div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🚐 Flota de vehículos</div>
+        <div class="settings-title">Flota de vehículos</div>
         <div class="settings-desc">Importá el Excel actualizado con la lista de vehículos. Reconoce columnas tipo "Identificador", "Matrícula", "Marca", etc.</div>
         <label class="settings-btn primary" style="display:block;text-align:center">
-          📊 Importar flota (Excel / CSV)
+          Importar flota (Excel / CSV)
           <input type="file" accept=".xlsx,.xls,.csv" style="display:none" id="import-fleet-file">
         </label>
         <button class="settings-btn" data-action="reset-fleet">↺ Restaurar flota original (${DEFAULT_FLEET.length} vehículos)</button>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🚫 Dar de baja vehículos</div>
+        <div class="settings-title">Dar de baja vehículos</div>
         <div class="settings-desc">Quitá de la flota activa los vehículos vendidos. Su historial de revisiones se conserva. Podés reactivarlos cuando quieras.</div>
         ${(()=>{
           const activos=state.fleet.filter(v=>!state.bajas[v.id]);
@@ -1165,53 +1168,53 @@ function renderSettings(){
             </div>`).join('');
           }
           html+=`<div style="font-size:12px;font-weight:700;color:#374151;margin:12px 0 6px">Activos (${activos.length}) — tocá para dar de baja:</div>`;
-          html+=`<input class="search-input" id="baja-search" placeholder="🔍 Buscar vehículo a dar de baja..." value="${state.bajaSearch||''}" style="margin-bottom:8px">`;
+          html+=`<input class="search-input" id="baja-search" placeholder="Buscar vehículo a dar de baja..." value="${state.bajaSearch||''}" style="margin-bottom:8px">`;
           const q=(state.bajaSearch||'').toLowerCase();
           const filtrados=activos.filter(v=>!q||[v.id,v.plate,v.model].some(x=>(x||'').toLowerCase().includes(q)));
           html+=`<div style="max-height:260px;overflow-y:auto">`;
           html+=filtrados.map(v=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#F9FAFB;border-radius:8px;margin-bottom:5px">
             <div style="font-size:13px"><b>${v.id}</b> · ${v.plate||''} <span style="color:#9CA3AF">${v.model||''}</span></div>
-            <button data-baja="${v.id}" style="background:#FEE2E2;color:#DC2626;border:1px solid #FCA5A5;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700">🚫 Baja</button>
+            <button data-baja="${v.id}" style="background:#FEE2E2;color:#DC2626;border:1px solid #FCA5A5;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700">Baja</button>
           </div>`).join('');
           html+=`</div>`;
           return html;
         })()}
       </div>
       <div class="settings-section">
-        <div class="settings-title">💾 Cache de daños</div>
+        <div class="settings-title">Cache de daños</div>
         <div class="settings-desc">Guarda la última revisión de cada vehículo para sugerir daños vigentes en la próxima inspección.</div>
-        <button class="settings-btn primary" data-action="export-cache">💾 Descargar cache</button>
+        <button class="settings-btn primary" data-action="export-cache">Descargar cache</button>
         <label class="settings-btn" style="display:block;text-align:center">
-          📥 Cargar cache desde JSON
+          Cargar cache desde JSON
           <input type="file" accept=".json" style="display:none" id="import-cache-file">
         </label>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🔢 Numeración de revisiones (OneDrive)</div>
+        <div class="settings-title">Numeración de revisiones (OneDrive)</div>
         <div class="settings-desc">Suma esta cantidad de revisiones YA existentes en OneDrive al número de archivo descargado. Actualmente: <b>${Object.keys(state.revOffsets).length} vehículos con offset</b>.</div>
-        <button class="settings-btn primary" data-action="edit-single-offset">✏️ Ajustar offset de un vehículo</button>
+        <button class="settings-btn primary" data-action="edit-single-offset">Ajustar offset de un vehículo</button>
         <label class="settings-btn" style="display:block;text-align:center">
-          📥 Cargar offsets desde JSON
+          Cargar offsets desde JSON
           <input type="file" accept=".json" style="display:none" id="import-offsets-file">
         </label>
         <button class="settings-btn" data-action="reset-offsets">↺ Borrar todos los offsets</button>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🆘 Rescate de datos</div>
+        <div class="settings-title">Rescate de datos</div>
         <div class="settings-desc">Descarga TODAS las inspecciones guardadas como JSON.</div>
-        <button class="settings-btn primary" data-action="rescue">🆘 Descargar historial completo</button>
+        <button class="settings-btn primary" data-action="rescue">Descargar historial completo</button>
         <label class="settings-btn" style="display:block;text-align:center">
-          📥 Importar inspecciones JSON
+          Importar inspecciones JSON
           <input type="file" accept=".json" style="display:none" id="import-insp-file">
         </label>
       </div>
       <div class="settings-section" style="background:#FEE2E2">
-        <div class="settings-title" style="color:#991B1B">🧹 Limpiar historial de inspecciones</div>
+        <div class="settings-title" style="color:#991B1B">Limpiar historial de inspecciones</div>
         <div class="settings-desc" style="color:#991B1B">Borra TODAS las inspecciones guardadas en la app. NO toca el cache, la flota ni los offsets. Útil si el historial tiene inspecciones viejas de pruebas y querés que la numeración arranque desde el offset de OneDrive.</div>
-        <button class="settings-btn" style="background:#DC2626;color:white;border-color:#DC2626" data-action="clear-inspections">🧹 Borrar todo el historial</button>
+        <button class="settings-btn" style="background:#DC2626;color:white;border-color:#DC2626" data-action="clear-inspections">Borrar todo el historial</button>
       </div>
       <div class="settings-section" style="background:#FEF3C7">
-        <div class="settings-title">ℹ️ Sobre esta versión</div>
+        <div class="settings-title">Sobre esta versión</div>
         <div class="settings-desc" style="color:#78350F">
           Aplicación LOCAL. Los datos viven en tu navegador (IndexedDB), no en servidores.<br><br>
           <b>Ventajas:</b> funciona offline, storage grande y estable, sin republicaciones destructivas.<br><br>
@@ -1233,23 +1236,23 @@ function renderInspect(){
   const extDmg=dmgList.filter(([code])=>EXT.find(i=>i.code===code)).length;
   const intDmg=dmgList.filter(([code])=>INT.find(i=>i.code===code)).length;
   const tabs=[
-    {id:'info',icon:'📋',label:'Info'},
-    {id:'equipo',icon:'🎒',label:'Equipo'},
-    {id:'ext',icon:'🚐',label:'Ext',bdg:extDmg},
-    {id:'int',icon:'🛋',label:'Int',bdg:intDmg},
-    {id:'fotos',icon:'📸',label:'Fotos'},
-    {id:'resumen',icon:'📊',label:'Resumen'},
+    {id:'info',icon:'',label:'Info'},
+    {id:'equipo',icon:'',label:'Equipo'},
+    {id:'ext',icon:'',label:'Ext',bdg:extDmg},
+    {id:'int',icon:'',label:'Int',bdg:intDmg},
+    {id:'fotos',icon:'',label:'Fotos'},
+    {id:'resumen',icon:'',label:'Resumen'},
   ];
   return `
     <div class="insp-hdr">
       <button class="back-btn" data-action="back-inspect">‹</button>
       <div class="veh-title">
-        <div>${state.editingId?'<span class="badge">✏️</span> ':''}${c.veh.id} · ${c.veh.brand} ${c.veh.model}</div>
+        <div>${state.editingId?'<span class="badge">Editando</span> ':''}${c.veh.id} · ${c.veh.brand} ${c.veh.model}</div>
         <div>${c.veh.plate} · ${fmtDate(c.date)}</div>
       </div>
     </div>
     <div class="insp-tabs">
-      ${tabs.map(t=>`<button class="insp-tab ${state.itab===t.id?'active':''}" data-itab="${t.id}">${t.icon} ${t.label}${t.bdg?`<span class="bdg">${t.bdg}</span>`:''}</button>`).join('')}
+      ${tabs.map(t=>`<button class="insp-tab ${state.itab===t.id?'active':''}" data-itab="${t.id}">${t.label}${t.bdg?`<span class="bdg">${t.bdg}</span>`:''}</button>`).join('')}
     </div>
     <div style="padding:12px 12px 100px">
       ${state.itab==='info'?renderTabInfo():''}
@@ -1259,7 +1262,7 @@ function renderInspect(){
       ${state.itab==='fotos'?renderTabFotos():''}
       ${state.itab==='resumen'?renderTabResumen():''}
     </div>
-    ${state.itab==='resumen'?`<div class="footer-btn"><button data-action="save-inspection">💾 ${state.editingId?'Guardar cambios':'Guardar inspección'}</button></div>`:''}
+    ${state.itab==='resumen'?`<div class="footer-btn"><button data-action="save-inspection">${state.editingId?'Guardar cambios':'Guardar inspección'}</button></div>`:''}
     ${state.dmgModal?renderDmgModal():''}
     ${state.showCopyDmg?renderCopyDmgModal():''}
   `;
@@ -1274,7 +1277,7 @@ function renderCopyDmgModal(){
     <div class="modal" data-copy-close>
       <div class="modal-content" style="max-width:440px;max-height:85vh;display:flex;flex-direction:column;padding:0" data-copy-stop>
         <div style="padding:18px 18px 10px;border-bottom:1px solid var(--BD)">
-          <div class="modal-title">🔄 Daños de la última revisión</div>
+          <div class="modal-title">Daños de la última revisión</div>
           <div style="font-size:12px;color:var(--GR);margin-top:3px">${fmtDate(cached.date)} · Marcá los que <b>siguen vigentes e iguales</b>. Se copiarán con sus fotos.</div>
         </div>
         <div style="flex:1;overflow-y:auto;padding:12px 16px">
@@ -1285,7 +1288,7 @@ function renderCopyDmgModal(){
             const ph=x.d?.photos||[];
             return `<div class="copy-dmg-item ${checked?'selected':''}" data-copy-toggle="${x.code}" style="${alreadyInInsp?'opacity:.5':''}">
               <div class="copy-dmg-check ${checked?'checked':''}">${checked?'✓':''}</div>
-              ${ph.length>0?`<img src="${ph[0]}" class="copy-dmg-thumb">`:`<div class="copy-dmg-thumb" style="background:#F1F5F9;display:flex;align-items:center;justify-content:center;font-size:20px">📷</div>`}
+              ${ph.length>0?`<img src="${ph[0]}" class="copy-dmg-thumb">`:`<div class="copy-dmg-thumb" style="background:#F1F5F9;display:flex;align-items:center;justify-content:center;font-size:20px"></div>`}
               <div class="copy-dmg-info">
                 <div class="copy-dmg-name">${item?item.name:x.name||x.code}</div>
                 <div class="copy-dmg-meta">${x.d?.gr||''} · ${x.d?.ty||''} · ${ph.length} foto${ph.length!==1?'s':''}${alreadyInInsp?' · ya cargado':''}</div>
@@ -1345,7 +1348,7 @@ function applyCopiedDmgs(){
   });
   state.showCopyDmg=false;
   state.copySel={};
-  toast(`✅ ${sel.length} daño${sel.length!==1?'s':''} copiado${sel.length!==1?'s':''}`,'ok');
+  toast(`${sel.length} daño${sel.length!==1?'s':''} copiado${sel.length!==1?'s':''}`,'ok');
   render();
 }
 
@@ -1377,7 +1380,7 @@ function renderTabInfo(){
       </div>
     </div>
     <div class="field-row">
-      <div class="field-label">📝 Notas / observaciones</div>
+      <div class="field-label">Notas / observaciones</div>
       <textarea class="field-value" id="notes-input" placeholder="Datos extra a destacar en la OT (ej: cliente reportó ruido, revisar en próximo mantenimiento...)" style="width:100%;min-height:90px;resize:vertical;font-family:inherit">${c.notes?c.notes.replace(/</g,'&lt;').replace(/>/g,'&gt;'):''}</textarea>
     </div>
   `;
@@ -1422,7 +1425,7 @@ function renderItemsList(list){
   let prevZone=null;
   list.forEach(item=>{
     if(item.zone&&item.zone!==prevZone){
-      out+=`<div class="zone-title">${item.zone}</div>`;
+      out+=`<div class="zone-title">${String(item.zone).replace(/^[^A-Za-zÁÉÍÓÚÑ]+/,'')}</div>`;
       prevZone=item.zone;
     }
     const st=c.items[item.code];
@@ -1432,7 +1435,7 @@ function renderItemsList(list){
       <div class="item-btns">
         <button class="item-btn ok ${s==='ok'?'selected':''}" data-item="${item.code}" data-val="ok">✓ OK</button>
         <button class="item-btn na ${s==='na'?'selected':''}" data-item="${item.code}" data-val="na">N/A</button>
-        <button class="item-btn dmg ${s==='dmg'?'selected':''}" data-item="${item.code}" data-val="dmg">⚠ Daño</button>
+        <button class="item-btn dmg ${s==='dmg'?'selected':''}" data-item="${item.code}" data-val="dmg">Daño</button>
       </div>
       ${s==='dmg'&&st.d?`
         <div class="dmg-info" data-item-edit="${item.code}">
@@ -1456,8 +1459,7 @@ function renderCachedBanner(list, label){
   const pending=cached.dmgs.filter(x=>codesInList.has(x.code)&&!c.items[x.code]);
   if(pending.length===0)return '';
   return `<div class="cached-banner" data-open-copy-dmg>
-    <div style="font-size:22px">🔄</div>
-    <div style="flex:1">
+        <div style="flex:1">
       <div style="font-size:13px;font-weight:700;color:#1E40AF">Última revisión (${fmtDate(cached.date)}): ${pending.length} daño${pending.length!==1?'s':''} ${label}</div>
       <div style="font-size:11px;color:#1E40AF">Tocá para revisar cuáles siguen vigentes y copiarlos con fotos</div>
     </div>
@@ -1472,15 +1474,15 @@ function renderTabFotos(){
   const c=state.currentInsp;
   return `
     <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:10px 12px;margin-bottom:12px">
-      <div style="font-size:13px;color:#1E40AF;font-weight:600">📸 Fotos generales del vehículo</div>
+      <div style="font-size:13px;color:#1E40AF;font-weight:600">Fotos generales del vehículo</div>
       <div style="font-size:11px;color:#1E40AF;line-height:1.4;margin-top:2px">Fotos generales (no de daños específicos). Aparecerán en el informe PDF.</div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
       <button class="photo-input-btn" style="flex:1;padding:12px 8px;border-style:solid" id="gen-cam-btn">
-        📷 Cámara
+        Cámara
       </button>
       <label class="photo-input-btn" style="flex:1;padding:12px 8px">
-        🖼️ Galería
+        Galería
         <input type="file" accept="image/*" multiple id="gen-photos-gal">
       </label>
     </div>
@@ -1561,7 +1563,7 @@ function renderDmgModal(){
   return `
     <div class="modal" data-modal-close>
       <div class="modal-content" style="max-width:440px;max-height:90vh;overflow-y:auto" data-modal-stop>
-        <div class="modal-title">⚠️ Daño: ${item.name}</div>
+        <div class="modal-title">Daño: ${item.name}</div>
         <div class="dmg-form">
           <div class="dmg-form-section">
             <div class="dmg-form-title">Tipo de daño</div>
@@ -1591,10 +1593,10 @@ function renderDmgModal(){
             <div class="dmg-form-title">Fotos (${f.photos.length})</div>
             <div style="display:flex;gap:8px">
               <button class="photo-input-btn" style="flex:1;padding:10px 8px;border-style:solid" id="dmg-cam-btn">
-                📷 Cámara
+                Cámara
               </button>
               <label class="photo-input-btn" style="flex:1;padding:10px 8px">
-                🖼️ Galería
+                Galería
                 <input type="file" accept="image/*" multiple id="dmg-photo-gal">
               </label>
             </div>
@@ -1888,6 +1890,6 @@ async function init(){
 // init() lo lanza nube-rev.js
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="nube-rev.js?v=6"></script>
+<script src="nube-rev.js?v=7"></script>
 </body>
 </html>

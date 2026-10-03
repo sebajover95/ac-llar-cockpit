@@ -250,21 +250,21 @@
   function pillHtml() {
     const n = pendingCount();
     let txt, bg, fg;
-    if (!online()) { txt = n ? "📴 Sin conexión · " + n + " por subir" : "📴 Sin conexión"; bg = "#FEF3C7"; fg = "#92400E"; }
-    else if (Nube.syncing) { txt = "⏳ Subiendo…"; bg = "#FFEDD5"; fg = "#9A3412"; }
-    else if (n) { txt = "⚠️ " + n + " por subir"; bg = "#FEE2E2"; fg = "#991B1B"; }
-    else { txt = "☁ Al día"; bg = "#DCFCE7"; fg = "#166534"; }
+    if (!online()) { txt = n ? "Sin conexión · " + n + " por subir" : "Sin conexión"; bg = "#FEF3C7"; fg = "#92400E"; }
+    else if (Nube.syncing) { txt = "Subiendo…"; bg = "#FFEDD5"; fg = "#9A3412"; }
+    else if (n) { txt = "" + n + " por subir"; bg = "#FEE2E2"; fg = "#991B1B"; }
+    else { txt = "Al día"; bg = "#DCFCE7"; fg = "#166534"; }
     return `<span id="nube-pill" data-action="sync-now" style="display:inline-block;margin-top:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;background:${bg};color:${fg};cursor:pointer">${txt}</span>`;
   }
   function refreshPill() { const el = document.getElementById("nube-pill"); if (el) el.outerHTML = pillHtml(); }
   window.nubePill = pillHtml;
   window.syncBadge = function (r) {
     let b = "";
-    if (r._sync === "pendiente") b = `<span style="background:#FEE2E2;color:#991B1B">⏳ Pendiente de subir</span>`;
-    else if (r._estado === "pendiente") b = `<span style="background:#FFEDD5;color:#9A3412">🕓 En el cockpit · por confirmar</span>`;
-    else if (r._estado === "editada") b = `<span style="background:#FEF3C7;color:#92400E">✏️ Editada · por confirmar</span>`;
-    else if (r._estado === "confirmada") b = `<span style="background:#DCFCE7;color:#166534">✅ Confirmada en cockpit</span>`;
-    const who = r._inspector ? `<span style="background:#F1F5F9;color:#475569">👤 ${esc(String(r._inspector).split("@")[0])}</span>` : "";
+    if (r._sync === "pendiente") b = `<span style="background:#FEE2E2;color:#991B1B">Pendiente de subir</span>`;
+    else if (r._estado === "pendiente") b = `<span style="background:#FFEDD5;color:#9A3412">En el cockpit · por confirmar</span>`;
+    else if (r._estado === "editada") b = `<span style="background:#FEF3C7;color:#92400E">Editada · por confirmar</span>`;
+    else if (r._estado === "confirmada") b = `<span style="background:#DCFCE7;color:#166534">Confirmada en cockpit</span>`;
+    const who = r._inspector ? `<span style="background:#F1F5F9;color:#475569">${esc(String(r._inspector).split("@")[0])}</span>` : "";
     return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:11px;font-weight:700">${b.replace(/<span style="/, '<span style="padding:2px 7px;border-radius:6px;')}${who.replace(/<span style="/, '<span style="padding:2px 7px;border-radius:6px;')}</div>`;
   };
 
@@ -301,12 +301,12 @@
     try {
       await dbPut("inspections", insp);
       setLocal(insp); sortRecords(); recomputeCache();
-      toast(online() ? "✅ Guardada · subiendo a la nube…" : "✅ Guardada en el móvil · se subirá al tener conexión", "ok");
+      toast(online() ? "Guardada · subiendo a la nube…" : "Guardada en el móvil · se subirá al tener conexión", "ok");
       state.currentInsp = null; state.editingId = null; state.view = "home"; state.tab = "history";
       render();
       push();
     } catch (e) {
-      toast("❌ Error al guardar: " + (e.message || e), "err");
+      toast("Error al guardar: " + (e.message || e), "err");
     }
   };
 
@@ -348,7 +348,7 @@
       const html = buildExportHTML(full, r.revNum);
       const fname = `OT · ${r.veh?.id || "SIN-ID"} · ${r.veh?.plate || ""}${r.revNum != null ? " (" + r.revNum + ")" : ""}.html`;
       downloadBlob(new Blob([html], { type: "text/html;charset=utf-8" }), fname);
-      toast("📥 Descargado como " + fname, "ok");
+      toast("Descargado como " + fname, "ok");
     } catch (e) { toast("Error: " + (e.message || e), "err"); }
   };
 
@@ -373,7 +373,7 @@
     const { error } = await sb.from("rev_offsets").upsert({ veh_id: vehId, offset: n });
     if (error) { toast("Error: " + error.message, "err"); return; }
     state.revOffsets[vehId] = n; await metaSet("revOffsets", state.revOffsets);
-    toast(`✅ ${vehId} → ${n}`, "ok"); render();
+    toast(`${vehId} → ${n}`, "ok"); render();
   };
 
   // Migración: importar el historial de la app antigua (JSON de "Rescate").
@@ -428,7 +428,7 @@
       }
       const p = Nube.importing;
       sortRecords(); recomputeCache(); render();
-      toast(`✅ Historial: ${p.done} subidas, ${p.skip} ya estaban${p.err ? ", " + p.err + " con error (vuelve a importar el mismo archivo para reintentarlas)" : ""}`, p.err ? "err" : "ok");
+      toast(`Historial: ${p.done} subidas, ${p.skip} ya estaban${p.err ? ", " + p.err + " con error (vuelve a importar el mismo archivo para reintentarlas)" : ""}`, p.err ? "err" : "ok");
     } catch (e) { toast("Error: " + (e.message || e), "err"); }
     finally { Nube.importing = null; }
   };
@@ -444,40 +444,40 @@
     </div></div>
     <div class="container">
       <div class="settings-section">
-        <div class="settings-title">👤 Cuenta</div>
+        <div class="settings-title">Cuenta</div>
         <div class="settings-desc">Conectado como <b>${esc(Nube.user)}</b></div>
         <button class="settings-btn" data-action="logout">Cerrar sesión</button>
       </div>
       <div class="settings-section">
-        <div class="settings-title">☁ Nube</div>
+        <div class="settings-title">Nube</div>
         <div class="settings-desc">
           <b>Conexión:</b> ${online() ? "sí" : "no (las revisiones se guardan en el móvil)"}<br>
           <b>Pendientes de subir:</b> ${n}<br>
           <b>Última sincronización:</b> ${last}
           ${Nube.error ? `<br><span style="color:#B91C1C"><b>Último error:</b> ${esc(Nube.error)}</span>` : ""}
         </div>
-        <button class="settings-btn primary" data-action="sync-now">🔄 Sincronizar ahora</button>
+        <button class="settings-btn primary" data-action="sync-now">Sincronizar ahora</button>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🚐 Flota</div>
+        <div class="settings-title">Flota</div>
         <div class="settings-desc">La flota viene del cockpit (${state.fleet.length} vehículos). Las altas, bajas y cambios se hacen en el cockpit.</div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🔢 Numeración de OT</div>
+        <div class="settings-title">Numeración de OT</div>
         <div class="settings-desc">La nube asigna el número (N) de cada OT, sin repetir aunque revisen varias personas. Vehículos con número inicial de OneDrive: <b>${offs}</b>.</div>
-        <button class="settings-btn" data-action="edit-single-offset">✏️ Ajustar número inicial de un vehículo</button>
+        <button class="settings-btn" data-action="edit-single-offset">Ajustar número inicial de un vehículo</button>
       </div>
       ${esAdmin() ? `      <div class="settings-section">
-        <div class="settings-title">📥 Traer historial de la app antigua</div>
-        <div class="settings-desc">Carga el JSON de "🆘 Rescate" de la app anterior. Se sube como historial (NO va al cockpit como pendiente: esas OT ya están en el cockpit). Hazlo desde el PC con wifi y no cierres la página hasta que termine. Si se corta, vuelve a cargar el mismo archivo: salta las que ya subió.</div>
-        <label class="settings-btn" style="display:block;text-align:center">📥 Importar historial JSON
+        <div class="settings-title">Traer historial de la app antigua</div>
+        <div class="settings-desc">Carga el JSON de "Rescate" de la app anterior. Se sube como historial (NO va al cockpit como pendiente: esas OT ya están en el cockpit). Hazlo desde el PC con wifi y no cierres la página hasta que termine. Si se corta, vuelve a cargar el mismo archivo: salta las que ya subió.</div>
+        <label class="settings-btn" style="display:block;text-align:center">Importar historial JSON
           <input type="file" accept=".json" style="display:none" id="import-insp-file"></label>
         <div id="import-progress" style="font-size:13px;font-weight:700;color:#1E3A5F;margin-top:6px">${Nube.importing ? "Importando…" : ""}</div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">🆘 Descargar historial</div>
+        <div class="settings-title">Descargar historial</div>
         <div class="settings-desc">Descarga los datos de todas las revisiones (sin fotos).</div>
-        <button class="settings-btn" data-action="rescue">🆘 Descargar historial (datos)</button>
+        <button class="settings-btn" data-action="rescue">Descargar historial (datos)</button>
       </div>
 ` : ""}
     </div>`;
