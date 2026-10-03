@@ -10888,6 +10888,23 @@ const parseOTDateTime = (value) => {
       onClose();
     } }, isEnAlquiler ? `Marcar EN USO ${Object.keys(parsed.byVehicle).length} veh\xEDculos` : `Aplicar fechas a ${Object.keys(parsed.byVehicle).length} veh\xEDculos`)))));
   }
+  // ===== Copia de seguridad de las OT en OneDrive =====
+  function ArchivePanel({ info, onArchive }) {
+    if (!info) return null;
+    const h = React.createElement;
+    const dias = info.lastAt ? Math.floor((Date.now() - new Date(info.lastAt).getTime()) / 864e5) : null;
+    const warn = info.pend > 0 && (dias === null || dias >= 7);
+    const cuando = info.lastAt ? (dias === 0 ? "hoy" : dias === 1 ? "ayer" : `hace ${dias} días`) : "nunca";
+    return h("div", { style: { display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap", background: warn ? "#FEF3C7" : T.surface, border: `1px solid ${warn ? "#F59E0B" : T.border}`, borderRadius: "10px", padding: "10px 14px", marginBottom: "14px", fontSize: "13px", color: T.ink } },
+      h("span", { style: { fontWeight: 800 } }, "📁 Copia en OneDrive"),
+      h("span", { style: { color: T.inkSoft } }, `última: ${cuando}${info.carpeta ? " · " + info.carpeta : ""}`),
+      h("span", { style: { fontWeight: 700, color: info.pend ? (warn ? "#92400E" : T.warn) : T.ok } }, info.pend ? `${info.pend} OT sin archivar` : "todo archivado ✓"),
+      info.msg && h("span", { style: { color: T.inkSoft } }, info.msg),
+      h("div", { style: { flex: 1 } }),
+      info.soportado
+        ? h(Btn, { variant: warn ? "primary" : "secondary", sm: true, disabled: info.busy, onClick: (e) => onArchive(e && e.shiftKey) }, info.busy ? "Archivando…" : "Archivar ahora")
+        : h("span", { style: { fontSize: "12px", color: T.inkSoft, fontStyle: "italic" } }, "se archiva desde el PC"));
+  }
   // ===== OT pendientes de confirmar (llegan de la app de revisiones en la nube) =====
   // Cada OT es una ficha independiente: se acumulan hasta que alguien las confirma.
   // Del mismo vehículo solo se puede abrir la más antigua (si no, la segunda vería
@@ -12545,6 +12562,46 @@ const scanResWatchFolder = async (handle) => {
         window.removeEventListener("acllar-buzon", onNew);
       };
     }, [loaded]);
+    // NUBE · copia de las OT en OneDrive
+    const [archInfo, setArchInfo] = useState(null);
+    const loadArch = useCallback(async () => {
+      const C = window.acllarCloud;
+      if (!C || !C.archivo) return;
+      try {
+        const pend = (await C.archivo.pendientes()).length;
+        const r = await window.storage.get("archivo_onedrive");
+        const last = r && r.value ? JSON.parse(r.value) : null;
+        setArchInfo((prev) => ({ ...(prev || {}), pend, lastAt: last && last.at, carpeta: last && last.carpeta, soportado: C.archivo.soportado() }));
+      } catch (e) { console.warn("[archivo]", e); }
+    }, []);
+    useEffect(() => {
+      if (!loaded) return;
+      loadArch();
+      const iv = setInterval(loadArch, 300000);
+      const on = () => loadArch();
+      const onKv = (ev) => { if (ev.detail && ev.detail.key === "archivo_onedrive") loadArch(); };
+      window.addEventListener("acllar-revisiones", on);
+      window.addEventListener("acllar-remote-update", onKv);
+      return () => { clearInterval(iv); window.removeEventListener("acllar-revisiones", on); window.removeEventListener("acllar-remote-update", onKv); };
+    }, [loaded]);
+    const doArchive = async (elegirOtra) => {
+      setArchInfo((p) => ({ ...p, busy: true, msg: "" }));
+      try {
+        const res = await window.acllarCloud.archivo.archivar({ pedir: !!elegirOtra, onProgress: (x) => setArchInfo((p) => ({ ...p, msg: `${x.hechas + x.errores}/${x.total}` })) });
+        await requestConfirm({
+          title: res.errores ? "Archivado con avisos" : "Copia hecha en OneDrive",
+          message: `${res.hechas} OT guardadas en "${res.carpeta}"${res.datos ? " + copia de los datos (carpeta COPIAS DE DATOS)" : ""}.` +
+            (res.fotosBorradas ? ` Se liberaron de la nube ${res.fotosBorradas} fotos de OT de más de 3 meses (ya están en OneDrive).` : "") +
+            (res.errores ? ` ${res.errores} OT no se pudieron guardar: vuelve a pulsar "Archivar ahora".` : ""),
+          confirmLabel: "Entendido"
+        });
+      } catch (e) {
+        if (!(e && e.name === "AbortError")) await requestConfirm({ title: "No se pudo archivar", message: String(e && e.message || e), confirmLabel: "Entendido" });
+      } finally {
+        setArchInfo((p) => ({ ...p, busy: false, msg: "" }));
+        loadArch();
+      }
+    };
     // NUBE · OT de la app de revisiones pendientes de confirmar
     const [revPend, setRevPend] = useState([]);
     const [revOpen, setRevOpen] = useState(null);
@@ -12571,7 +12628,7 @@ const scanResWatchFolder = async (handle) => {
         setPendingWatchFiles([file]);
         setImportModalOpen(true);
       } catch (e) {
-        await requestConfirm({ title: "No se pudo abrir la OT", message: "Revisa la conexión e inténtalo de nuevo. (" + (e.message || e) + ")", confirmText: "Entendido" });
+        await requestConfirm({ title: "No se pudo abrir la OT", message: "Revisa la conexión e inténtalo de nuevo. (" + (e.message || e) + ")", confirmLabel: "Entendido" });
       } finally { setRevOpening(null); }
     };
     const handleImportPdfs =(payload, partsToOrder = [], photoOps = null) => {
@@ -13666,7 +13723,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         },
         s === "todas" ? "Todas" : s
       );
-    }), globalSede.length > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: T.inkSoft, fontStyle: "italic", marginLeft: "4px" } }, "mostrando ", globalSede.length === 1 ? `solo ${globalSede[0]}` : globalSede.join(" + "))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: "1280px", margin: "0 auto", padding: "28px 28px 60px" } }, activeTab === "today" && /* @__PURE__ */ React.createElement(RevPendPanel, { items: revPend, openingId: revOpening, onOpen: openRevision }), activeTab === "today" && /* @__PURE__ */ React.createElement(
+    }), globalSede.length > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: T.inkSoft, fontStyle: "italic", marginLeft: "4px" } }, "mostrando ", globalSede.length === 1 ? `solo ${globalSede[0]}` : globalSede.join(" + "))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: "1280px", margin: "0 auto", padding: "28px 28px 60px" } }, activeTab === "today" && /* @__PURE__ */ React.createElement(ArchivePanel, { info: archInfo, onArchive: doArchive }), activeTab === "today" && /* @__PURE__ */ React.createElement(RevPendPanel, { items: revPend, openingId: revOpening, onOpen: openRevision }), activeTab === "today" && /* @__PURE__ */ React.createElement(
       TodayView,
       {
         state: activeState,
@@ -13846,7 +13903,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
           handleImportPdfs(payload, parts, photoOps);
           if (row && (payload || []).some((p) => p.vehicleId === row.veh_id)) {
             window.acllarCloud.revisiones.confirmar(row).then((ok) => {
-              if (!ok) requestConfirm({ title: "La OT cambió", message: `La OT de ${row.veh_id} se editó en el móvil mientras la revisabas. Lo que confirmaste ya se aplicó; volverá a aparecer como "editada" para que revises los cambios.`, confirmText: "Entendido" });
+              if (!ok) requestConfirm({ title: "La OT cambió", message: `La OT de ${row.veh_id} se editó en el móvil mientras la revisabas. Lo que confirmaste ya se aplicó; volverá a aparecer como "editada" para que revises los cambios.`, confirmLabel: "Entendido" });
               loadRevPend();
             }).catch(() => loadRevPend());
           }

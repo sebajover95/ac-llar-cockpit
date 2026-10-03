@@ -574,8 +574,87 @@
     },
   };
 
+  // ---------- Archivo en OneDrive (copia de seguridad) ----------
+  // Escribe cada OT como "OT · AC-XXX · MATRÍCULA (N).html" en la carpeta de
+  // OneDrive elegida (la misma donde se guardaban a mano) + una copia de los
+  // datos. Solo escribe lo nuevo o cambiado. Funciona en el PC (Edge/Chrome).
+  const handleDB = () => new Promise((ok, ko) => {
+    const r = indexedDB.open("acllar_handles", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("h");
+    r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error);
+  });
+  const hGet = async (k) => { const db = await handleDB(); return new Promise((ok) => { const q = db.transaction("h").objectStore("h").get(k); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); }); };
+  const hSet = async (k, v) => { try { const db = await handleDB(); return await new Promise((ok) => { try { const t = db.transaction("h", "readwrite"); t.objectStore("h").put(v, k); t.oncomplete = () => ok(true); t.onerror = () => ok(false); } catch (e) { ok(false); } }); } catch (e) { return false; } };
+  const refsOf = (data) => { const out = new Set(); const walk = (v) => { if (typeof v === "string") { if (v.startsWith("sb:")) out.add(v.slice(3)); } else if (v && typeof v === "object") for (const k in v) walk(v[k]); }; walk(data); return [...out]; };
+  const archivo = {
+    soportado: () => typeof window.showDirectoryPicker === "function",
+    async carpeta() { const h = await hGet("onedrive"); return h ? h.name : null; },
+    async pendientes() {
+      const { data, error } = await sb.rpc("revisiones_sin_archivar");
+      if (error) throw error;
+      return data || [];
+    },
+    // pedir=true: abrir el selector para (re)elegir la carpeta.
+    async archivar({ pedir = false, onProgress } = {}) {
+      let dir = pedir ? null : await hGet("onedrive");
+      if (dir) {
+        const perm = await dir.requestPermission({ mode: "readwrite" });
+        if (perm !== "granted") dir = null;
+      }
+      if (!dir) { dir = await window.showDirectoryPicker({ mode: "readwrite", id: "acllar-onedrive" }); await hSet("onedrive", dir); }
+      const lista = await this.pendientes();
+      let hechas = 0, errores = 0;
+      for (const row of lista) {
+        try {
+          const { data: full, error } = await sb.from("revisiones").select("id,veh_id,revnum,updated_at,data").eq("id", row.id).single();
+          if (error) throw error;
+          const file = await revisiones.otFile(full);
+          const name = row.revnum != null ? file.name : file.name.replace(" (null)", "");
+          const fh = await dir.getFileHandle(name, { create: true });
+          const w = await fh.createWritable(); await w.write(file); await w.close();
+          const { error: e2 } = await sb.from("rev_archivo").upsert({ id: row.id, hash: row.hash, archivo: name, archived_at: new Date().toISOString() });
+          if (e2) throw e2;
+          hechas++;
+        } catch (e) { errores++; console.warn("[archivo]", row.id, e); }
+        onProgress && onProgress({ hechas, errores, total: lista.length });
+      }
+      // Copia de los datos (cockpit + cuantificador + revisiones sin fotos)
+      let datos = false;
+      try {
+        const sub = await dir.getDirectoryHandle("COPIAS DE DATOS", { create: true });
+        const local = {};
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PREFIX)) local[k.slice(PREFIX.length)] = localStorage.getItem(k); }
+        const revs = []; for (let from = 0; ; from += 500) {
+          const { data, error } = await sb.from("revisiones").select("id,veh_id,fecha,inspector,revnum,estado,deleted,data").order("id").range(from, from + 499);
+          if (error) throw error; revs.push(...(data || [])); if (!data || data.length < 500) break;
+        }
+        const blob = new Blob([JSON.stringify({ __bundle: "ac-llar-copia-datos", exportedAt: new Date().toISOString(), almacenamiento: local, revisiones: revs })], { type: "application/json" });
+        const fh = await sub.getFileHandle(`DATOS_COCKPIT_${new Date().toISOString().slice(0, 10)}.json`, { create: true });
+        const w = await fh.createWritable(); await w.write(blob); await w.close();
+        datos = true;
+      } catch (e) { console.warn("[archivo] copia de datos", e); }
+      // Limpieza: fotos de OT de más de 90 días ya archivadas y confirmadas
+      let fotosBorradas = 0;
+      if (!errores) {
+        try {
+          const { data: limp, error } = await sb.rpc("revisiones_fotos_limpiables", { p_dias: 90 });
+          if (error) throw error;
+          for (const r of limp || []) {
+            const paths = refsOf(r.data);
+            for (let i = 0; i < paths.length; i += 100) { const { error: e3 } = await sb.storage.from("revisiones").remove(paths.slice(i, i + 100)); if (e3) throw e3; }
+            await sb.from("rev_archivo").upsert({ id: r.id, fotos_borradas: true });
+            fotosBorradas += paths.length;
+          }
+        } catch (e) { console.warn("[archivo] limpieza", e); }
+      }
+      const res = { hechas, errores, total: lista.length, datos, fotosBorradas, carpeta: dir.name, at: new Date().toISOString() };
+      if (!errores) await window.storage.set("archivo_onedrive", JSON.stringify({ at: res.at, por: who(), carpeta: dir.name }));
+      return res;
+    },
+  };
+
   window.acllarCloud = {
-    sb, buzon, flushAll, revisiones, device: DEVICE, empty: false,
+    sb, buzon, flushAll, revisiones, archivo, device: DEVICE, empty: false,
     MAIN_KEY, QUANT_DOCS,
     // La app avisa de que ya recargó un doc tras un cambio remoto.
     ack(doc) { delete awaiting[doc]; },
