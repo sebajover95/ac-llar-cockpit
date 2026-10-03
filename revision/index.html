@@ -197,6 +197,34 @@ window.uiAlert=(msg,o={})=>uiDialog({msg,cancel:null,...o});
 </script>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-in"><img src="logo-acllar.png" alt=""><div class="sp-bar"><i></i></div><div class="sp-txt">Revisión de flota</div></div>
+</div>
+<style>
+#splash{position:fixed;inset:0;z-index:2000;background:#fff;display:flex;align-items:center;justify-content:center;transition:opacity .45s ease,visibility .45s;cursor:pointer}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none}
+#splash .sp-in{display:flex;flex-direction:column;align-items:center;transition:transform .45s ease}
+#splash.out .sp-in{transform:scale(1.04)}
+#splash img{width:min(64vw,260px);height:auto;opacity:0;transform:translateY(8px) scale(.96);animation:spIn .6s cubic-bezier(.2,.7,.2,1) .05s forwards}
+#splash .sp-bar{width:min(40vw,150px);height:2px;background:#F1F2F4;border-radius:2px;margin-top:26px;overflow:hidden;opacity:0;animation:spFade .3s ease .35s forwards}
+#splash .sp-bar i{display:block;height:100%;width:0;background:#E8640A;border-radius:2px;animation:spBar .8s cubic-bezier(.4,0,.2,1) .4s forwards}
+#splash .sp-txt{margin-top:12px;font:600 11px/1 "Manrope",-apple-system,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#9CA3AF;opacity:0;animation:spFade .4s ease .45s forwards}
+@keyframes spIn{to{opacity:1;transform:none}}
+@keyframes spFade{to{opacity:1}}
+@keyframes spBar{to{width:100%}}
+@media (prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+</style>
+<script>
+(function(){var sp=document.getElementById('splash');if(!sp)return;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var t0=Date.now(),MIN=reduce?300:1250,gone=false;
+  function hide(){if(gone)return;gone=true;sp.classList.add('out');setTimeout(function(){sp.remove();},500);}
+  sp.addEventListener('click',hide);
+  function ready(){setTimeout(hide,Math.max(0,MIN-(Date.now()-t0)));}
+  if(document.readyState==='complete')ready();else window.addEventListener('load',ready);
+  setTimeout(hide,3500);
+})();
+</script>
 <div id="app"></div>
 
 <script>
