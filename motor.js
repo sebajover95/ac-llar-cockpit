@@ -11244,7 +11244,14 @@ No se puede deshacer.`,
           return {
             ...v,
             workflowStatus: newStatus,
-            ...newStatus === "REVISADO" && !v.lastInspectedAt ? { lastInspectedAt: nowIso() } : {},
+            // Fecha de revisión: se pone la de ahora si no tenía, o si la que tenía es
+            // de un ciclo anterior (anterior a la última llegada). Así no queda
+            // "revisado" con una fecha previa a que el vehículo volviera.
+            ...newStatus === "REVISADO" && (() => {
+              if (!v.lastInspectedAt) return true;
+              const llegada = v.returnedAt || v.lastReturnAt;
+              return !!llegada && new Date(v.lastInspectedAt).getTime() < new Date(llegada).getTime();
+            })() ? { lastInspectedAt: nowIso() } : {},
             ...enUsoExtra,
             ...newStatus === "DEVUELTO" ? { lastReturnAt: nowIso() } : {}
           };
