@@ -2,7 +2,7 @@
 // - La app (HTML y JS): primero red (para recibir actualizaciones), si no hay, la copia guardada.
 // - Librerías del CDN: copia guardada primero.
 // - Llamadas a Supabase: nunca se guardan (siempre en vivo).
-const CACHE = "acllar-rev-v6";
+const CACHE = "acllar-rev-v7";
 const SHELL = ["./", "./index.html", "./nube-rev.js?v=6", "./manifest.json",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"];
 self.addEventListener("install", (e) => {
