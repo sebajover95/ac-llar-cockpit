@@ -619,30 +619,23 @@
         } catch (e) { errores++; console.warn("[archivo]", row.id, e); }
         onProgress && onProgress({ hechas, errores, total: lista.length });
       }
-      // Copia de los datos en COPIAS DE DATOS:
-      //  1) el MISMO "backup completo" que exporta el cockpit (se recupera con
-      //     "Restaurar backup completo"), con las fotos de daños del cockpit;
-      //  2) las revisiones de la app (texto; sus fotos van en las OT archivadas).
+      // Backup completo del cockpit: se DESCARGA (a Descargas), igual que
+      // "Exportar backup completo". En la carpeta de OT solo van las OT.
       let datos = false;
       try {
-        const sub = await dir.getDirectoryHandle("COPIAS DE DATOS", { create: true });
-        const dia = new Date().toISOString().slice(0, 10);
-        const val = (k) => { const v = readLocal(k); return v; };
+        const val = (k) => readLocal(k);
         const cockpit = JSON.parse(val(MAIN_KEY) || "{}");
         const cuantificador = {}; for (const k of ["ac_history", "ac_repo", "ac_doc2", "ac_flota", "ac_pieza_mem", "ac_extra_mem", "ac_consultas"]) { const v = val(k); if (v != null) cuantificador[k] = v; }
         const preferencias = {}; for (const k of ["global_sede_filter", "today_collapsed_sections", "cuantificador_url"]) { const v = val(k); if (v != null) preferencias[k] = v; }
         let damagePhotos = []; try { damagePhotos = await window.acllarPhotos.exportAll(); } catch (e) {}
-        const full = new Blob([JSON.stringify({ __bundle: "ac-llar-full-backup", version: 2, exportedAt: new Date().toISOString(), cockpit, cuantificador, preferencias, damagePhotos })], { type: "application/json" });
-        let fh = await sub.getFileHandle(`AC-LLAR-backup-COMPLETO-${dia}.json`, { create: true });
-        let w = await fh.createWritable(); await w.write(full); await w.close();
-        const revs = []; for (let from = 0; ; from += 500) {
-          const { data, error } = await sb.from("revisiones").select("id,veh_id,fecha,inspector,revnum,estado,deleted,data").order("id").range(from, from + 499);
-          if (error) throw error; revs.push(...(data || [])); if (!data || data.length < 500) break;
-        }
-        fh = await sub.getFileHandle(`REVISIONES-${dia}.json`, { create: true });
-        w = await fh.createWritable(); await w.write(new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), revisiones: revs })], { type: "application/json" })); await w.close();
+        const blob = new Blob([JSON.stringify({ __bundle: "ac-llar-full-backup", version: 2, exportedAt: new Date().toISOString(), cockpit, cuantificador, preferencias, damagePhotos }, null, 2)], { type: "application/json" });
+        const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a"); a.href = url; a.download = `AC-LLAR-backup-COMPLETO-${ts}.json`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
         datos = true;
-      } catch (e) { console.warn("[archivo] copia de datos", e); }
+      } catch (e) { console.warn("[archivo] backup completo", e); }
       // Limpieza: fotos de OT de más de 45 días ya archivadas en OneDrive y confirmadas
       let fotosBorradas = 0;
       if (!errores) {

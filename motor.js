@@ -12590,7 +12590,7 @@ const scanResWatchFolder = async (handle) => {
         const res = await window.acllarCloud.archivo.archivar({ pedir: !!elegirOtra, onProgress: (x) => setArchInfo((p) => ({ ...p, msg: `${x.hechas + x.errores}/${x.total}` })) });
         await requestConfirm({
           title: res.errores ? "Archivado con avisos" : "Copia hecha en OneDrive",
-          message: `${res.hechas} OT guardadas en "${res.carpeta}"${res.datos ? " + copia de los datos (carpeta COPIAS DE DATOS)" : ""}.` +
+          message: `${res.hechas} OT guardadas en "${res.carpeta}".${res.datos ? " Además se descargó el backup completo del cockpit (carpeta Descargas)." : ""}` +
             (res.fotosBorradas ? ` Se liberaron de la nube ${res.fotosBorradas} fotos de OT de más de 45 días (siguen dentro de sus OT en OneDrive).` : "") +
             (res.errores ? ` ${res.errores} OT no se pudieron guardar: vuelve a pulsar "Archivar ahora".` : ""),
           confirmLabel: "Entendido"
