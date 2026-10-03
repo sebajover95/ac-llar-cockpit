@@ -1784,21 +1784,7 @@ const inicioOT =
     alignItems: "center",
     justifyContent: "space-between",
     gap: "20px"
-  } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "14px" } }, /* @__PURE__ */ React.createElement("div", { style: {
-    width: 38,
-    height: 38,
-    background: T.ink,
-    color: T.rust,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: F.display,
-    fontWeight: 700,
-    fontSize: "17px",
-    letterSpacing: "-0.04em",
-    borderRadius: "8px",
-    flexShrink: 0
-  } }, "AC"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: {
+  } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "16px" } }, /* @__PURE__ */ React.createElement("img", { src: theme === "dark" ? "logo-acllar-dark.png" : "logo-acllar.png", alt: "AC\xB7LLAR", style: { height: "42px", width: "auto", display: "block", flexShrink: 0 } }), /* @__PURE__ */ React.createElement("div", { style: { width: "1px", alignSelf: "stretch", background: T.border, margin: "2px 0" } }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", { style: {
     margin: 0,
     fontFamily: F.display,
     fontSize: "22px",
@@ -1814,7 +1800,7 @@ const inicioOT =
     fontWeight: 600,
     marginTop: "4px",
     fontFamily: F.body
-  } }, "AC-LLAR \xB7 Gesti\xF3n de flota \xB7 Piloto v2"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, onToggleTheme && /* @__PURE__ */ React.createElement("button", { onClick: onToggleTheme, title: theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro", "aria-label": "Cambiar tema", style: { cursor: "pointer", fontSize: "15px", lineHeight: 1, color: T.inkSoft, background: T.surface, border: `1px solid ${T.border}`, borderRadius: "12px", padding: "7px 10px" } }, theme === "dark" ? "☀️" : "\u{1F319}"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: T.inkSoft, textAlign: "right", lineHeight: 1.3, marginRight: "4px" } }, /* @__PURE__ */ React.createElement("div", { style: {
+  } }, "Gesti\xF3n de flota"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, onToggleTheme && /* @__PURE__ */ React.createElement("button", { onClick: onToggleTheme, title: theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro", "aria-label": "Cambiar tema", style: { cursor: "pointer", fontSize: "15px", lineHeight: 1, color: T.inkSoft, background: T.surface, border: `1px solid ${T.border}`, borderRadius: "12px", padding: "7px 10px" } }, theme === "dark" ? "☀️" : "\u{1F319}"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: T.inkSoft, textAlign: "right", lineHeight: 1.3, marginRight: "4px" } }, /* @__PURE__ */ React.createElement("div", { style: {
     fontSize: "9px",
     textTransform: "uppercase",
     letterSpacing: "0.12em",
