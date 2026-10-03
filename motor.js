@@ -12660,9 +12660,12 @@ const scanResWatchFolder = async (handle) => {
         });
         const reviewLog = Array.isArray(s.reviewLog) ? [...s.reviewLog] : [];
         const arrLog = Array.isArray(s.arrivalLog) ? s.arrivalLog : [];
-        const isHistoricalLoad = payload.every(
-          (p) => newDamages.filter((nd) => nd.vehicleId === p.vehicleId).every((nd) => nd.historicalBaseline)
-        );
+        // Carga histórica = primera OT de un vehículo (todos sus daños son "línea base").
+        // Una revisión SIN daños nuevos NO es histórica: también cuenta para el tiempo de revisión.
+        const isHistoricalLoad = payload.every((p) => {
+          const nds = newDamages.filter((nd) => nd.vehicleId === p.vehicleId);
+          return nds.length > 0 && nds.every((nd) => nd.historicalBaseline);
+        });
         if (!isHistoricalLoad) {
           for (const vid of importedVehicleIds) {
             const v = s.vehicles.find((x) => x.id === vid);
