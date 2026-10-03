@@ -11014,15 +11014,28 @@ const [globalSede, setGlobalSede] = useState([]);
     }, [state, loaded]);
     // NUBE: si otro dispositivo guardó cambios, nube.js ya actualizó la copia
     // local; aquí recargamos el estado en pantalla sin recargar la página.
+    // El cuantificador guarda sus datos aparte: si llegan cambios remotos de
+    // sus claves, se vuelve a montar para que lea la versión nueva.
+    const [quantKey, setQuantKey] = useState(0);
     useEffect(() => {
+      const C = window.acllarCloud;
       const onRemote = async (ev) => {
-        if (!ev.detail || ev.detail.key !== STORAGE_KEY) return;
-        const data = await loadFromStorage();
-        setState(data);
+        const key = ev.detail && ev.detail.key;
+        if (key === STORAGE_KEY) {
+          const data = await loadFromStorage();
+          setState(data);
+          if (C && C.ack) C.ack(STORAGE_KEY);
+        } else if (C && C.QUANT_DOCS && C.QUANT_DOCS.includes(key)) {
+          setQuantKey((k) => k + 1);
+        }
       };
       window.addEventListener("acllar-remote-update", onRemote);
       return () => window.removeEventListener("acllar-remote-update", onRemote);
     }, []);
+    useEffect(() => {
+      const C = window.acllarCloud;
+      if (quantKey && C && C.ack) C.QUANT_DOCS.forEach((d) => C.ack(d));
+    }, [quantKey]);
     // AUTO-SYNC RECAMBIOS: cada daño activo que requiere pieza tiene su línea
     // automáticamente (sin "Traer del cockpit"). El código se autollena desde la
     // memoria de piezas si ya se conoce; si no, queda "sin código". Las líneas
@@ -13671,7 +13684,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         onEditReviewDate: handleEditReviewDate,
         requestConfirm
       }
-    ), /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "quantifier" ? "block" : "none" } }, /* @__PURE__ */ React.createElement(CuantificadorApp, { titularesByAc })), activeTab === "deposits" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { style: { display: activeTab === "quantifier" ? "block" : "none" } }, /* @__PURE__ */ React.createElement(CuantificadorApp, { key: "quant-" + quantKey, titularesByAc })), activeTab === "deposits" && /* @__PURE__ */ React.createElement(
       DepositsView,
       {
         state,
