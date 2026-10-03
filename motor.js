@@ -12591,7 +12591,7 @@ const scanResWatchFolder = async (handle) => {
         await requestConfirm({
           title: res.errores ? "Archivado con avisos" : "Copia hecha en OneDrive",
           message: `${res.hechas} OT guardadas en "${res.carpeta}"${res.datos ? " + copia de los datos (carpeta COPIAS DE DATOS)" : ""}.` +
-            (res.fotosBorradas ? ` Se liberaron de la nube ${res.fotosBorradas} fotos de OT de más de 3 meses (ya están en OneDrive).` : "") +
+            (res.fotosBorradas ? ` Se liberaron de la nube ${res.fotosBorradas} fotos de OT de más de 45 días (siguen dentro de sus OT en OneDrive).` : "") +
             (res.errores ? ` ${res.errores} OT no se pudieron guardar: vuelve a pulsar "Archivar ahora".` : ""),
           confirmLabel: "Entendido"
         });

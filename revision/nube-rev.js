@@ -56,7 +56,7 @@
     return new Blob([u], { type: mime });
   }
   const blobToDataUrl = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
-  const NO_PHOTO = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#F1F5F9"/><text x="100" y="95" font-size="14" text-anchor="middle" fill="#64748B" font-family="sans-serif">Foto no disponible</text><text x="100" y="115" font-size="10" text-anchor="middle" fill="#94A3B8" font-family="sans-serif">archivada en OneDrive o sin conexión</text></svg>');
+  const NO_PHOTO = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#F1F5F9"/><text x="100" y="92" font-size="13" text-anchor="middle" fill="#64748B" font-family="sans-serif">Foto en la OT de OneDrive</text><text x="100" y="115" font-size="10" text-anchor="middle" fill="#94A3B8" font-family="sans-serif">(más de 45 días) o sin conexión</text></svg>');
 
   // keepLocal=false: no guardar copia en el móvil (historial antiguo importado).
   async function uploadPhoto(recId, dataUrl, keepLocal = true) {

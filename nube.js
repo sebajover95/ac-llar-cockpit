@@ -586,6 +586,7 @@
   const hGet = async (k) => { const db = await handleDB(); return new Promise((ok) => { const q = db.transaction("h").objectStore("h").get(k); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); }); };
   const hSet = async (k, v) => { try { const db = await handleDB(); return await new Promise((ok) => { try { const t = db.transaction("h", "readwrite"); t.objectStore("h").put(v, k); t.oncomplete = () => ok(true); t.onerror = () => ok(false); } catch (e) { ok(false); } }); } catch (e) { return false; } };
   const refsOf = (data) => { const out = new Set(); const walk = (v) => { if (typeof v === "string") { if (v.startsWith("sb:")) out.add(v.slice(3)); } else if (v && typeof v === "object") for (const k in v) walk(v[k]); }; walk(data); return [...out]; };
+  const DIAS_FOTOS_NUBE = 45; // las fotos de la app viven 45 días en la nube; después, en las OT de OneDrive
   const archivo = {
     soportado: () => typeof window.showDirectoryPicker === "function",
     async carpeta() { const h = await hGet("onedrive"); return h ? h.name : null; },
@@ -618,26 +619,35 @@
         } catch (e) { errores++; console.warn("[archivo]", row.id, e); }
         onProgress && onProgress({ hechas, errores, total: lista.length });
       }
-      // Copia de los datos (cockpit + cuantificador + revisiones sin fotos)
+      // Copia de los datos en COPIAS DE DATOS:
+      //  1) el MISMO "backup completo" que exporta el cockpit (se recupera con
+      //     "Restaurar backup completo"), con las fotos de daños del cockpit;
+      //  2) las revisiones de la app (texto; sus fotos van en las OT archivadas).
       let datos = false;
       try {
         const sub = await dir.getDirectoryHandle("COPIAS DE DATOS", { create: true });
-        const local = {};
-        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PREFIX)) local[k.slice(PREFIX.length)] = localStorage.getItem(k); }
+        const dia = new Date().toISOString().slice(0, 10);
+        const val = (k) => { const v = readLocal(k); return v; };
+        const cockpit = JSON.parse(val(MAIN_KEY) || "{}");
+        const cuantificador = {}; for (const k of ["ac_history", "ac_repo", "ac_doc2", "ac_flota", "ac_pieza_mem", "ac_extra_mem", "ac_consultas"]) { const v = val(k); if (v != null) cuantificador[k] = v; }
+        const preferencias = {}; for (const k of ["global_sede_filter", "today_collapsed_sections", "cuantificador_url"]) { const v = val(k); if (v != null) preferencias[k] = v; }
+        let damagePhotos = []; try { damagePhotos = await window.acllarPhotos.exportAll(); } catch (e) {}
+        const full = new Blob([JSON.stringify({ __bundle: "ac-llar-full-backup", version: 2, exportedAt: new Date().toISOString(), cockpit, cuantificador, preferencias, damagePhotos })], { type: "application/json" });
+        let fh = await sub.getFileHandle(`AC-LLAR-backup-COMPLETO-${dia}.json`, { create: true });
+        let w = await fh.createWritable(); await w.write(full); await w.close();
         const revs = []; for (let from = 0; ; from += 500) {
           const { data, error } = await sb.from("revisiones").select("id,veh_id,fecha,inspector,revnum,estado,deleted,data").order("id").range(from, from + 499);
           if (error) throw error; revs.push(...(data || [])); if (!data || data.length < 500) break;
         }
-        const blob = new Blob([JSON.stringify({ __bundle: "ac-llar-copia-datos", exportedAt: new Date().toISOString(), almacenamiento: local, revisiones: revs })], { type: "application/json" });
-        const fh = await sub.getFileHandle(`DATOS_COCKPIT_${new Date().toISOString().slice(0, 10)}.json`, { create: true });
-        const w = await fh.createWritable(); await w.write(blob); await w.close();
+        fh = await sub.getFileHandle(`REVISIONES-${dia}.json`, { create: true });
+        w = await fh.createWritable(); await w.write(new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), revisiones: revs })], { type: "application/json" })); await w.close();
         datos = true;
       } catch (e) { console.warn("[archivo] copia de datos", e); }
-      // Limpieza: fotos de OT de más de 90 días ya archivadas y confirmadas
+      // Limpieza: fotos de OT de más de 45 días ya archivadas en OneDrive y confirmadas
       let fotosBorradas = 0;
       if (!errores) {
         try {
-          const { data: limp, error } = await sb.rpc("revisiones_fotos_limpiables", { p_dias: 90 });
+          const { data: limp, error } = await sb.rpc("revisiones_fotos_limpiables", { p_dias: DIAS_FOTOS_NUBE });
           if (error) throw error;
           for (const r of limp || []) {
             const paths = refsOf(r.data);
