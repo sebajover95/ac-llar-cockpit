@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cockpit AC-LLAR</title>
+<link rel="preload" as="image" href="logo-acllar.png">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -36,6 +37,38 @@
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true">
+  <div class="sp-in"><img id="sp-logo" src="logo-acllar.png" alt=""><div class="sp-bar"><i></i></div><div class="sp-txt">Cockpit · Gestión de flota</div></div>
+</div>
+<script>try{if(localStorage.getItem("acllar_theme")==="dark"){document.getElementById("splash").classList.add("dark");document.getElementById("sp-logo").src="logo-acllar-dark.png";}}catch(e){}</script>
+<style>
+#splash{position:fixed;inset:0;z-index:2147483000;background:#fff;display:flex;align-items:center;justify-content:center;transition:opacity .45s ease,visibility .45s;cursor:pointer}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none}
+#splash .sp-in{display:flex;flex-direction:column;align-items:center;transition:transform .45s ease}
+#splash.out .sp-in{transform:scale(1.04)}
+#splash img{width:min(64vw,260px);height:auto;opacity:0;transform:translateY(8px) scale(.96);animation:spIn .6s cubic-bezier(.2,.7,.2,1) .05s forwards}
+#splash .sp-bar{width:min(40vw,150px);height:2px;background:#F1F2F4;border-radius:2px;margin-top:26px;overflow:hidden;opacity:0;animation:spFade .3s ease .35s forwards}
+#splash .sp-bar i{display:block;height:100%;width:0;background:#E8640A;border-radius:2px;animation:spBar .8s cubic-bezier(.4,0,.2,1) .4s forwards}
+#splash .sp-txt{margin-top:12px;font:600 11px/1 "Manrope",-apple-system,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#9CA3AF;opacity:0;animation:spFade .4s ease .45s forwards}
+#splash.dark{background:#0E1420}
+#splash.dark .sp-bar{background:#28344A}
+#splash.dark .sp-txt{color:#64748B}
+@keyframes spIn{to{opacity:1;transform:none}}
+@keyframes spFade{to{opacity:1}}
+@keyframes spBar{to{width:100%}}
+@media (prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+</style>
+<script>
+(function(){var sp=document.getElementById('splash');if(!sp)return;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var t0=Date.now(),MIN=reduce?300:1250,gone=false;
+  function hide(){if(gone)return;gone=true;sp.classList.add('out');setTimeout(function(){sp.remove();},500);}
+  sp.addEventListener('click',hide);
+  function ready(){setTimeout(hide,Math.max(0,MIN-(Date.now()-t0)));}
+  if(document.readyState==='complete')ready();else window.addEventListener('load',ready);
+  setTimeout(hide,8000);
+})();
+</script>
 <div id="root"><div id="loading"><div class="spin"></div><div>Cargando cockpit…</div></div></div>
 <div id="err"></div>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
