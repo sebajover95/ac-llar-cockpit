@@ -3120,7 +3120,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
       borderLeft: `2px solid ${T.borderHi}`
     } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700, marginBottom: "2px", fontFamily: F.body } }, "C\xF3digo OT (no editable)"), form.pdfCode)), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "20px" } }, /* @__PURE__ */ React.createElement(Btn, { variant: "secondary", onClick: onClose }, "Cancelar"), /* @__PURE__ */ React.createElement(Btn, { variant: "primary", onClick: () => onSave(form), icon: Save }, isEdit ? "Guardar cambios" : "Guardar da\xF1o")));
   };
-  const ImportPdfModal = ({ open, onClose, vehicles, existingDamages, onConfirm, initialFiles, onInitialConsumed }) => {
+  const ImportPdfModal = ({ open, onClose, vehicles, existingDamages, onConfirm, initialFiles, onInitialConsumed, allowEmpty }) => {
     const [stage, setStage] = useState("upload");
     const [error, setError] = useState("");
     const [parsedResults, setParsedResults] = useState([]);
@@ -3265,7 +3265,8 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
   damages: r.damages.filter((d) => d._selected),
         // Damages to mark as repaired (missing from this OT + user chose 'repair')
         markRepaired: (r.missing || []).filter((m) => m._action === "repair").map((m) => m.id)
-      })).filter((p) => p.damages.length > 0 || p.markRepaired.length > 0 || (p.otNota && p.otNota.length > 0));
+      })).filter((p) => allowEmpty || p.damages.length > 0 || p.markRepaired.length > 0 || (p.otNota && p.otNota.length > 0));
+      // allowEmpty (OT de la nube): una revisión sin daños nuevos también se confirma y deja el vehículo REVISADO.
       const partsToOrder = [];
       parsedResults.forEach((r, fi) => {
         if (!r.vehicle) return;
@@ -3289,7 +3290,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
           }
         });
       });
-      if (payload.length === 0 && partsToOrder.length === 0) {
+      if (payload.length === 0 && partsToOrder.length === 0 && !allowEmpty) {
         setError("No hay cambios para aplicar.");
         return;
       }
@@ -10887,6 +10888,38 @@ const parseOTDateTime = (value) => {
       onClose();
     } }, isEnAlquiler ? `Marcar EN USO ${Object.keys(parsed.byVehicle).length} veh\xEDculos` : `Aplicar fechas a ${Object.keys(parsed.byVehicle).length} veh\xEDculos`)))));
   }
+  // ===== OT pendientes de confirmar (llegan de la app de revisiones en la nube) =====
+  // Cada OT es una ficha independiente: se acumulan hasta que alguien las confirma.
+  // Del mismo vehículo solo se puede abrir la más antigua (si no, la segunda vería
+  // como "nuevos" los daños de la primera aún sin confirmar y se duplicarían).
+  function RevPendPanel({ items, openingId, onOpen }) {
+    if (!items || items.length === 0) return null;
+    const seen = new Set();
+    const rows = items.map((r) => { const blocked = seen.has(r.veh_id); seen.add(r.veh_id); return { r, blocked }; });
+    const fmt = (iso) => { try { return new Date(iso).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
+    const h = React.createElement;
+    return h("div", { style: { background: T.surface, border: `1.5px solid ${T.rust}`, borderRadius: "12px", padding: "14px 16px", marginBottom: "18px" } },
+      h("div", { style: { display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "10px", flexWrap: "wrap" } },
+        h("div", { style: { fontWeight: 800, fontSize: "16px", color: T.ink } }, "📥 OT pendientes de confirmar"),
+        h("span", { style: { background: T.rust, color: "#fff", borderRadius: "10px", padding: "1px 8px", fontSize: "12px", fontWeight: 700 } }, items.length),
+        h("span", { style: { fontSize: "12px", color: T.inkSoft } }, "Sus daños no entran al cockpit hasta que las confirmes.")),
+      rows.map(({ r, blocked }) => {
+        const d = r.data || {};
+        const nd = (d.dmgs || []).length;
+        return h("div", { key: r.id, style: { display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", padding: "8px 0", borderTop: `1px solid ${T.border}`, opacity: blocked ? 0.6 : 1 } },
+          h("div", { style: { fontWeight: 800, color: T.ink, minWidth: "70px" } }, r.veh_id),
+          h("div", { style: { fontSize: "13px", color: T.inkSoft, fontFamily: F.mono } }, (d.veh && d.veh.plate) || ""),
+          h("div", { style: { fontSize: "13px", color: T.ink } }, `OT (${r.revnum})`),
+          h("div", { style: { fontSize: "12px", color: T.inkSoft } }, fmt(r.fecha)),
+          r.inspector && h("div", { style: { fontSize: "12px", color: T.inkSoft } }, "👤 " + String(r.inspector).split("@")[0]),
+          h("div", { style: { fontSize: "12px", color: nd ? T.warn : T.ok, fontWeight: 700 } }, nd ? `${nd} daño${nd > 1 ? "s" : ""}` : "sin daños"),
+          r.estado === "editada" && h("span", { style: { fontSize: "11px", fontWeight: 700, background: "#FEF3C7", color: "#92400E", padding: "2px 7px", borderRadius: "6px" } }, "✏️ Editada"),
+          h("div", { style: { flex: 1 } }),
+          blocked
+            ? h("span", { style: { fontSize: "12px", color: T.inkSoft, fontStyle: "italic" } }, "⏳ espera a confirmar la anterior de este vehículo")
+            : h(Btn, { variant: "primary", sm: true, disabled: !!openingId, onClick: () => onOpen(r) }, openingId === r.id ? "Cargando…" : "Revisar y confirmar"));
+      }));
+  }
   function App() {
     const [state, setState] = useState(DEFAULT_STATE);
     const [loaded, setLoaded] = useState(false);
@@ -12512,6 +12545,35 @@ const scanResWatchFolder = async (handle) => {
         window.removeEventListener("acllar-buzon", onNew);
       };
     }, [loaded]);
+    // NUBE · OT de la app de revisiones pendientes de confirmar
+    const [revPend, setRevPend] = useState([]);
+    const [revOpen, setRevOpen] = useState(null);
+    const [revOpening, setRevOpening] = useState(null);
+    const loadRevPend = useCallback(async () => {
+      const C = window.acllarCloud;
+      if (!C || !C.revisiones) return;
+      try { setRevPend(await C.revisiones.pendientes()); } catch (e) { console.warn("[revisiones]", e); }
+    }, []);
+    useEffect(() => {
+      if (!loaded) return;
+      loadRevPend();
+      const iv = setInterval(loadRevPend, 60000);
+      const on = () => loadRevPend();
+      window.addEventListener("acllar-revisiones", on);
+      return () => { clearInterval(iv); window.removeEventListener("acllar-revisiones", on); };
+    }, [loaded]);
+    const openRevision = async (row) => {
+      if (importModalOpen || revOpening) return; // una OT a la vez: nunca se pisan
+      setRevOpening(row.id);
+      try {
+        const file = await window.acllarCloud.revisiones.otFile(row);
+        setRevOpen(row);
+        setPendingWatchFiles([file]);
+        setImportModalOpen(true);
+      } catch (e) {
+        await requestConfirm({ title: "No se pudo abrir la OT", message: "Revisa la conexión e inténtalo de nuevo. (" + (e.message || e) + ")", confirmText: "Entendido" });
+      } finally { setRevOpening(null); }
+    };
     const handleImportPdfs =(payload, partsToOrder = [], photoOps = null) => {
       if (photoOps && typeof window !== "undefined" && window.acllarPhotos && window.acllarPhotos.applyOps) { try { window.acllarPhotos.applyOps(photoOps); } catch (e) {} }
       setState((s) => {
@@ -13601,7 +13663,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         },
         s === "todas" ? "Todas" : s
       );
-    }), globalSede.length > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: T.inkSoft, fontStyle: "italic", marginLeft: "4px" } }, "mostrando ", globalSede.length === 1 ? `solo ${globalSede[0]}` : globalSede.join(" + "))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: "1280px", margin: "0 auto", padding: "28px 28px 60px" } }, activeTab === "today" && /* @__PURE__ */ React.createElement(
+    }), globalSede.length > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: T.inkSoft, fontStyle: "italic", marginLeft: "4px" } }, "mostrando ", globalSede.length === 1 ? `solo ${globalSede[0]}` : globalSede.join(" + "))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: "1280px", margin: "0 auto", padding: "28px 28px 60px" } }, activeTab === "today" && /* @__PURE__ */ React.createElement(RevPendPanel, { items: revPend, openingId: revOpening, onOpen: openRevision }), activeTab === "today" && /* @__PURE__ */ React.createElement(
       TodayView,
       {
         state: activeState,
@@ -13772,10 +13834,22 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         onClose: () => {
           setImportModalOpen(false);
           setPendingWatchFiles(null);
+          setRevOpen(null);
         },
         vehicles: state.vehicles,
         existingDamages: state.damages,
-        onConfirm: handleImportPdfs,
+        onConfirm: (payload, parts, photoOps) => {
+          const row = revOpen;
+          handleImportPdfs(payload, parts, photoOps);
+          if (row && (payload || []).some((p) => p.vehicleId === row.veh_id)) {
+            window.acllarCloud.revisiones.confirmar(row).then((ok) => {
+              if (!ok) requestConfirm({ title: "La OT cambió", message: `La OT de ${row.veh_id} se editó en el móvil mientras la revisabas. Lo que confirmaste ya se aplicó; volverá a aparecer como "editada" para que revises los cambios.`, confirmText: "Entendido" });
+              loadRevPend();
+            }).catch(() => loadRevPend());
+          }
+          setRevOpen(null);
+        },
+        allowEmpty: !!revOpen,
         initialFiles: pendingWatchFiles,
         onInitialConsumed: () => setPendingWatchFiles(null)
       }

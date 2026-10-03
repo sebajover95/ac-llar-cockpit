@@ -309,6 +309,11 @@
         else pullKv([payload.key]).catch(() => {});
       })
       .subscribe();
+    sb.channel("revisiones")
+      .on("postgres_changes", { event: "*", schema: "public", table: "revisiones" }, () => {
+        window.dispatchEvent(new CustomEvent("acllar-revisiones"));
+      })
+      .subscribe();
     sb.channel("hq-buzon")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "hq_buzon" }, () => {
         window.dispatchEvent(new CustomEvent("acllar-buzon"));
@@ -531,8 +536,46 @@
     refreshBadge();
   }
 
+  // ---------- OT que llegan desde la app de revisiones ----------
+  const revisiones = {
+    // OT pendientes de confirmar (nuevas o editadas), de la más antigua a la más nueva.
+    async pendientes() {
+      const { data, error } = await sb.from("revisiones")
+        .select("id,veh_id,fecha,inspector,revnum,estado,updated_at,data")
+        .in("estado", ["pendiente", "editada"]).eq("deleted", false).order("fecha");
+      if (error) throw error;
+      return data || [];
+    },
+    // Genera el HTML de la OT (igual que el que descargaba la app) con sus fotos.
+    async otFile(row) {
+      const rec = JSON.parse(JSON.stringify(row.data || {}));
+      const cache = {};
+      const res = async (p) => {
+        if (typeof p !== "string" || !p.startsWith("sb:")) return p;
+        if (cache[p]) return cache[p];
+        const { data, error } = await sb.storage.from("revisiones").download(p.slice(3));
+        if (error) throw error;
+        const url = await new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(new Blob([data], { type: "image/jpeg" })); });
+        return (cache[p] = url);
+      };
+      for (const d of rec.dmgs || []) if (Array.isArray(d.photos)) d.photos = await Promise.all(d.photos.map(res));
+      if (Array.isArray(rec.genPhotos)) rec.genPhotos = await Promise.all(rec.genPhotos.map(res));
+      const html = window.AcOT.buildExportHTML(rec, row.revnum);
+      const name = `OT · ${row.veh_id} · ${(rec.veh && rec.veh.plate) || ""} (${row.revnum}).html`;
+      return new File([html], name, { type: "text/html" });
+    },
+    // Marca la OT como confirmada, solo si no cambió desde que se abrió.
+    async confirmar(row) {
+      const { data, error } = await sb.from("revisiones")
+        .update({ estado: "confirmada", confirmada_at: new Date().toISOString(), confirmada_por: who() })
+        .eq("id", row.id).eq("updated_at", row.updated_at).select("id");
+      if (error) throw error;
+      return !!(data && data.length);
+    },
+  };
+
   window.acllarCloud = {
-    sb, buzon, flushAll, device: DEVICE, empty: false,
+    sb, buzon, flushAll, revisiones, device: DEVICE, empty: false,
     MAIN_KEY, QUANT_DOCS,
     // La app avisa de que ya recargó un doc tras un cambio remoto.
     ack(doc) { delete awaiting[doc]; },
