@@ -337,7 +337,7 @@
   };
 
   window.downloadReport = async function (r) {
-    if (r.revNum == null) {
+    if (r.revNum == null && r._estado !== "historica") {
       toast("Esta OT aún no tiene número: se asigna al subirla a la nube. Prueba de nuevo con conexión.", "err");
       if (online()) push();
       return;
@@ -346,7 +346,7 @@
       toast("Preparando OT…");
       const full = await hydrate(r);
       const html = buildExportHTML(full, r.revNum);
-      const fname = `OT · ${r.veh?.id || "SIN-ID"} · ${r.veh?.plate || ""} (${r.revNum}).html`;
+      const fname = `OT · ${r.veh?.id || "SIN-ID"} · ${r.veh?.plate || ""}${r.revNum != null ? " (" + r.revNum + ")" : ""}.html`;
       downloadBlob(new Blob([html], { type: "text/html;charset=utf-8" }), fname);
       toast("📥 Descargado como " + fname, "ok");
     } catch (e) { toast("Error: " + (e.message || e), "err"); }
@@ -374,22 +374,59 @@
   };
 
   // Migración: importar el historial de la app antigua (JSON de "Rescate").
-  window.importInspections = async function (file) {
-    try {
-      toast("Leyendo archivo… (puede tardar)");
-      let arr = JSON.parse(await file.text());
-      if (!Array.isArray(arr)) { if (arr && arr.id && arr.veh) arr = [arr]; else { toast("Formato inválido", "err"); return; } }
-      const yaEnNube = new Set(state.records.filter((r) => r._sync === "ok").map((r) => r.id));
-      let n = 0;
-      for (const r of arr) {
-        if (!r || !r.id || !r.veh || yaEnNube.has(r.id)) continue;
-        const rec = { ...r, _sync: "pendiente", _historica: true, _inspector: Nube.user, _rev: Date.now() };
-        await dbPut("inspections", rec); setLocal(rec); n++;
+  // El archivo puede pesar cientos de MB: se lee por trozos y se procesa UNA
+  // revisión cada vez (fotos reducidas → nube), sin cargarlo entero en memoria.
+  // Si se corta, se puede volver a lanzar: salta las que ya están en la nube.
+  async function* streamJsonArray(file) {
+    const CH = 4 * 1024 * 1024;
+    const dec = new TextDecoder();
+    let buf = "", depth = 0, inStr = false, esc = false, start = -1, scanned = 0;
+    for (let off = 0; off < file.size; off += CH) {
+      buf += dec.decode(await file.slice(off, off + CH).arrayBuffer(), { stream: off + CH < file.size });
+      for (let i = scanned; i < buf.length; i++) {
+        const ch = buf[i];
+        if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; continue; }
+        if (ch === '"') { inStr = true; continue; }
+        if (ch === "{") { if (depth === 1 && start < 0) start = i; depth++; }
+        else if (ch === "}") { depth--; if (depth === 1 && start >= 0) { yield JSON.parse(buf.slice(start, i + 1)); buf = buf.slice(i + 1); i = -1; start = -1; } }
+        else if (ch === "[") depth++;
+        else if (ch === "]") depth--;
       }
+      scanned = buf.length;
+      if (start >= 0) scanned = buf.length; // objeto a medias: seguir leyendo
+    }
+  }
+  window.importInspections = async function (file) {
+    if (!online()) { toast("Necesitas conexión para traer el historial", "err"); return; }
+    if (Nube.importing) return;
+    Nube.importing = { done: 0, skip: 0, err: 0, total: 0 };
+    const prog = () => { const el = document.getElementById("import-progress"); const p = Nube.importing; if (el && p) el.textContent = `Procesadas ${p.done + p.skip + p.err} · subidas ${p.done} · ya estaban ${p.skip}${p.err ? " · con error " + p.err : ""}`; };
+    try {
+      const { data: ex } = await sb.from("revisiones").select("id");
+      const yaEnNube = new Set((ex || []).map((r) => Number(r.id)));
+      for await (const r of streamJsonArray(file)) {
+        if (!r || !r.id || !r.veh || !r.veh.id) continue;
+        if (yaEnNube.has(r.id)) { Nube.importing.skip++; prog(); continue; }
+        try {
+          const small = await mapPhotos(r, (p) => recompress(p, 1600, 0.75));
+          const withRefs = await mapPhotos(small, (p) => uploadPhoto(r.id, p, false));
+          const payload = stripLocal(withRefs); delete payload.revNum;
+          const { data, error } = await sb.rpc("guardar_revision", {
+            p_id: r.id, p_veh: r.veh.id, p_fecha: r.date, p_data: payload, p_historica: true,
+            p_revnum: typeof r.revNum === "number" ? r.revNum : null,
+          });
+          if (error) throw error;
+          const rec = { ...withRefs, revNum: data.revnum, _estado: data.estado, _sync: "ok" };
+          await dbPut("inspections", rec); setLocal(rec);
+          Nube.importing.done++;
+        } catch (e) { Nube.importing.err++; console.warn("[importar]", r.id, e); }
+        prog();
+      }
+      const p = Nube.importing;
       sortRecords(); recomputeCache(); render();
-      toast(`✅ ${n} revisiones en cola para subir (como históricas: no van al cockpit)`, "ok");
-      push();
+      toast(`✅ Historial: ${p.done} subidas, ${p.skip} ya estaban${p.err ? ", " + p.err + " con error (vuelve a importar el mismo archivo para reintentarlas)" : ""}`, p.err ? "err" : "ok");
     } catch (e) { toast("Error: " + (e.message || e), "err"); }
+    finally { Nube.importing = null; }
   };
 
   window.renderSettings = function () {
@@ -428,9 +465,10 @@
       </div>
       <div class="settings-section">
         <div class="settings-title">📥 Traer historial de la app antigua</div>
-        <div class="settings-desc">Carga el JSON de "🆘 Rescate" de la app anterior. Se sube como historial (no va al cockpit como pendiente). Mejor hacerlo desde el PC con wifi.</div>
+        <div class="settings-desc">Carga el JSON de "🆘 Rescate" de la app anterior. Se sube como historial (NO va al cockpit como pendiente: esas OT ya están en el cockpit). Hazlo desde el PC con wifi y no cierres la página hasta que termine. Si se corta, vuelve a cargar el mismo archivo: salta las que ya subió.</div>
         <label class="settings-btn" style="display:block;text-align:center">📥 Importar historial JSON
           <input type="file" accept=".json" style="display:none" id="import-insp-file"></label>
+        <div id="import-progress" style="font-size:13px;font-weight:700;color:#1E3A5F;margin-top:6px">${Nube.importing ? "Importando…" : ""}</div>
       </div>
       <div class="settings-section">
         <div class="settings-title">🆘 Descargar historial</div>
