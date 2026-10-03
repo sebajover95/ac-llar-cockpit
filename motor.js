@@ -12255,7 +12255,7 @@ No se tocan los da\xF1os \xFAnicos. \xBFContinuar?`,
         await requestConfirm({
           title: "No disponible en este navegador",
           message: "La vinculaci\xF3n de carpeta funciona en Edge o Chrome de escritorio. En este navegador no est\xE1 disponible.",
-          confirmText: "Entendido"
+          confirmLabel: "Entendido"
         });
         return;
       }
@@ -12464,7 +12464,7 @@ const scanResWatchFolder = async (handle) => {
     await requestConfirm({
       title: "No disponible en este navegador",
       message: "La vinculación de carpeta funciona en Edge o Chrome de escritorio.",
-      confirmText: "Entendido"
+      confirmLabel: "Entendido"
     });
     return;
   }
@@ -13423,15 +13423,15 @@ const base = {
           await requestConfirm({
             title: "Archivo no reconocido",
             message: 'Este archivo no es un backup completo de AC-LLAR. Us\xE1 "Importar respaldo" normal para backups individuales.',
-            confirmText: "Entendido"
+            confirmLabel: "Entendido"
           });
           return;
         }
         const ok = await requestConfirm({
           title: "Restaurar backup completo",
           message: "Esto reemplazar\xE1 TODO: cockpit y cuantificaci\xF3n. \xBFContinuar?",
-          confirmText: "Restaurar todo",
-          danger: true
+          confirmLabel: "Restaurar todo",
+          variant: "danger"
         });
         if (!ok) return;
         if (parsed.cockpit) setState({ ...DEFAULT_STATE, ...parsed.cockpit });
@@ -13457,7 +13457,7 @@ const base = {
         await requestConfirm({
           title: "Backup restaurado",
           message: "Se restaur\xF3 todo (incluidas las fotos de da\xF1os). Recarg\xE1 la p\xE1gina (F5) para que la cuantificaci\xF3n tome los datos nuevos.",
-          confirmText: "Entendido"
+          confirmLabel: "Entendido"
         });
       };
       reader.readAsText(file);
