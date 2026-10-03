@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cockpit AC-LLAR</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%20%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%233B5BFF'/%3E%20%3Cpath%20fill='%23F5F7FB'%20d='M4%2022.5%20L4%2013.5%20Q4%2012.3%205.2%2012.3%20L11.5%2012.3%20L11.5%208.5%20Q11.5%207.3%2012.7%207.3%20L26.8%207.3%20Q28%207.3%2028%208.5%20L28%2022.5%20Z'/%3E%20%3Cg%20fill='%233B5BFF'%3E%20%3Ccircle%20cx='9.2'%20cy='22.9'%20r='3.4'/%3E%20%3Ccircle%20cx='23'%20cy='22.9'%20r='3.4'/%3E%20%3C/g%3E%20%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body { font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F7FB; }
+  #root { min-height: 100vh; }
+  #loading { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px; color: #3B5BFF; font-family: sans-serif; }
+  #loading .spin { width: 40px; height: 40px; border: 3px solid #E4E9F1; border-top-color: #3B5BFF; border-radius: 50%; animation: s 0.8s linear infinite; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  #nube-login { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #F5F7FB; z-index: 9999; font-family: 'Manrope', sans-serif; }
+  #nube-login form { background: #fff; border: 1px solid #E4E9F1; border-radius: 14px; padding: 28px; width: min(360px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 30px rgba(20,30,60,.08); }
+  #nube-login .nl-title { font-size: 20px; font-weight: 800; color: #1B2333; }
+  #nube-login .nl-sub { font-size: 13px; color: #6B7488; margin-top: -8px; }
+  #nube-login label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #3A4256; }
+  #nube-login input { padding: 10px 12px; border: 1px solid #D5DCE8; border-radius: 8px; font-size: 15px; font-family: inherit; }
+  #nube-login button { padding: 11px; background: #3B5BFF; color: #fff; border: 0; border-radius: 8px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+  #nube-login button:disabled { opacity: .6; }
+  #nube-login .nl-err { color: #B42318; font-size: 13px; min-height: 16px; }
+  #nube-badge { position: fixed; right: 12px; bottom: 12px; z-index: 9000; display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 12px; border-radius: 999px; font: 600 12px 'Manrope', sans-serif; background: #fff; border: 1px solid #E4E9F1; color: #3A4256; box-shadow: 0 2px 10px rgba(20,30,60,.08); }
+  #nube-badge.nube-ok span { color: #067647; }
+  #nube-badge.nube-busy span { color: #B54708; }
+  #nube-badge.nube-err { background: #FEF3F2; border-color: #FDA29B; } #nube-badge.nube-err span { color: #B42318; }
+  #nube-badge button { border: 1px solid #E4E9F1; background: #F5F7FB; border-radius: 999px; padding: 3px 10px; font: 600 11px 'Manrope', sans-serif; cursor: pointer; color: #3A4256; }
+  #err { display: none; padding: 30px; max-width: 640px; margin: 40px auto; background: #FEE2E2; border: 1px solid #DC2626; border-radius: 10px; color: #7C2D12; font-family: sans-serif; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div id="root"><div id="loading"><div class="spin"></div><div>Cargando cockpit…</div></div></div>
+<div id="err"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="nube.js"></script>
+<script src="motor.js"></script>
+</body>
+</html>
