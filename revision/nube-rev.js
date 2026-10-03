@@ -314,7 +314,7 @@
     const rec = state.records.find((r) => r.id === id);
     if (!rec) return;
     const aviso = rec._estado === "confirmada" ? "\n\nOjo: esta OT ya está confirmada en el cockpit. Borrarla aquí NO quita sus daños del cockpit." : "";
-    if (!confirm("¿Borrar esta inspección para todos los usuarios? No se puede deshacer." + aviso)) return;
+    if (!(await uiConfirm("¿Borrar esta inspección para todos los usuarios? No se puede deshacer." + aviso, {ok:'Borrar',danger:true}))) return;
     const mark = { ...rec, _sync: "borrar" };
     await dbPut("inspections", mark);
     setLocal(mark); recomputeCache();
@@ -362,11 +362,11 @@
   };
 
   window.editSingleOffset = async function () {
-    const raw = prompt("¿Qué vehículo? (ej: AC-271)");
+    const raw = (await uiPrompt("¿Qué vehículo? (ej: AC-271)"));
     if (!raw) return;
     const vehId = raw.trim().toUpperCase();
     const current = state.revOffsets[vehId] || 0;
-    const nuevo = prompt(`Número inicial de ${vehId}: ${current}\n\n¿Nuevo valor? (el número (N) más alto que existe en OneDrive)`, current);
+    const nuevo = (await uiPrompt(`Número inicial de ${vehId}: ${current}\n\n¿Nuevo valor? (el número (N) más alto que existe en OneDrive)`, current));
     if (nuevo === null) return;
     const n = parseInt(nuevo, 10);
     if (isNaN(n) || n < 0) { toast("Debe ser un número >= 0", "err"); return; }
@@ -437,49 +437,53 @@
     const n = pendingCount();
     const offs = Object.keys(state.revOffsets || {}).length;
     const last = Nube.lastSync ? Nube.lastSync.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) : "—";
+    const row = (k, v) => `<div class="set-row"><span>${k}</span><b>${v}</b></div>`;
     return `
     <div class="hdr"><div class="hdr-top">
-      <button style="background:none;color:#fff;font-size:24px;padding:0;border:none" data-action="back-home">‹</button>
+      <button style="background:none;color:var(--INK);font-size:24px;padding:0;border:none" aria-label="Volver" data-action="back-home">‹</button>
       <div><h1 style="font-size:17px">Ajustes</h1></div><div style="width:24px"></div>
     </div></div>
     <div class="container">
+      <div class="set-group">Sincronización</div>
       <div class="settings-section">
-        <div class="settings-title">Cuenta</div>
-        <div class="settings-desc">Conectado como <b>${esc(Nube.user)}</b></div>
-        <button class="settings-btn" data-action="logout">Cerrar sesión</button>
+        ${row("Conexión", online() ? "Conectado" : "Sin conexión")}
+        ${row("Pendientes de subir", n)}
+        ${row("Última sincronización", last)}
+        ${Nube.error ? `<div class="set-err">Último error: ${esc(Nube.error)}</div>` : ""}
+        ${online() ? "" : `<div class="settings-desc" style="margin:8px 0 0">Las revisiones se guardan en el móvil y se suben al recuperar la conexión.</div>`}
+        <button class="settings-btn primary" style="margin:14px 0 0" data-action="sync-now">Sincronizar ahora</button>
       </div>
-      <div class="settings-section">
-        <div class="settings-title">Nube</div>
-        <div class="settings-desc">
-          <b>Conexión:</b> ${online() ? "sí" : "no (las revisiones se guardan en el móvil)"}<br>
-          <b>Pendientes de subir:</b> ${n}<br>
-          <b>Última sincronización:</b> ${last}
-          ${Nube.error ? `<br><span style="color:#B91C1C"><b>Último error:</b> ${esc(Nube.error)}</span>` : ""}
-        </div>
-        <button class="settings-btn primary" data-action="sync-now">Sincronizar ahora</button>
-      </div>
-      <div class="settings-section">
-        <div class="settings-title">Flota</div>
-        <div class="settings-desc">La flota viene del cockpit (${state.fleet.length} vehículos). Las altas, bajas y cambios se hacen en el cockpit.</div>
-      </div>
+
+      <div class="set-group">Revisiones</div>
       <div class="settings-section">
         <div class="settings-title">Numeración de OT</div>
         <div class="settings-desc">La nube asigna el número (N) de cada OT, sin repetir aunque revisen varias personas. Vehículos con número inicial de OneDrive: <b>${offs}</b>.</div>
-        <button class="settings-btn" data-action="edit-single-offset">Ajustar número inicial de un vehículo</button>
-      </div>
-      ${esAdmin() ? `      <div class="settings-section">
-        <div class="settings-title">Traer historial de la app antigua</div>
-        <div class="settings-desc">Carga el JSON de "Rescate" de la app anterior. Se sube como historial (NO va al cockpit como pendiente: esas OT ya están en el cockpit). Hazlo desde el PC con wifi y no cierres la página hasta que termine. Si se corta, vuelve a cargar el mismo archivo: salta las que ya subió.</div>
-        <label class="settings-btn" style="display:block;text-align:center">Importar historial JSON
-          <input type="file" accept=".json" style="display:none" id="import-insp-file"></label>
-        <div id="import-progress" style="font-size:13px;font-weight:700;color:#1E3A5F;margin-top:6px">${Nube.importing ? "Importando…" : ""}</div>
+        <button class="settings-btn" style="margin:0" data-action="edit-single-offset">Ajustar número inicial de un vehículo</button>
       </div>
       <div class="settings-section">
-        <div class="settings-title">Descargar historial</div>
-        <div class="settings-desc">Descarga los datos de todas las revisiones (sin fotos).</div>
-        <button class="settings-btn" data-action="rescue">Descargar historial (datos)</button>
+        <div class="settings-title">Flota</div>
+        <div class="settings-desc" style="margin:0">${state.fleet.length} vehículos, sincronizados desde el cockpit. Las altas, bajas y cambios se hacen allí.</div>
       </div>
-` : ""}
+      ${esAdmin() ? `
+      <div class="set-group">Administración</div>
+      <div class="settings-section">
+        <div class="settings-title">Descargar historial</div>
+        <div class="settings-desc">Descarga los datos de todas las revisiones, sin fotos.</div>
+        <button class="settings-btn" style="margin:0" data-action="rescue">Descargar historial</button>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">Traer historial de la app antigua</div>
+        <div class="settings-desc">Carga el JSON de "Rescate" de la app anterior. Se sube como historial (no va al cockpit como pendiente). Hazlo desde el PC con wifi y no cierres la página hasta que termine. Si se corta, vuelve a cargar el mismo archivo: salta las que ya subió.</div>
+        <label class="settings-btn" style="display:block;text-align:center;margin:0">Importar historial JSON
+          <input type="file" accept=".json" style="display:none" id="import-insp-file"></label>
+        <div id="import-progress" style="font-size:13px;font-weight:600;color:var(--INK);margin-top:8px">${Nube.importing ? "Importando…" : ""}</div>
+      </div>` : ""}
+
+      <div class="set-group">Cuenta</div>
+      <div class="settings-section">
+        ${row("Sesión iniciada como", esc(Nube.user))}
+        <button class="settings-btn set-logout" style="margin:14px 0 0" data-action="logout">Cerrar sesión</button>
+      </div>
     </div>`;
   };
 
@@ -490,7 +494,7 @@
     const a = el.dataset.action;
     if (a === "sync-now") { e.stopPropagation(); toast(online() ? "Sincronizando…" : "Sin conexión"); syncAll(); }
     if (a === "logout") {
-      if (pendingCount() && !confirm("Hay revisiones sin subir. Si cierras sesión se subirán cuando vuelvas a entrar. ¿Cerrar sesión?")) return;
+      if (pendingCount() && !(await uiConfirm("Hay revisiones sin subir. Si cierras sesión se subirán cuando vuelvas a entrar. ¿Cerrar sesión?", {ok:'Cerrar sesión'}))) return;
       await sb.auth.signOut(); location.reload();
     }
   }, true);

@@ -37,7 +37,18 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .card .veh-id{font-weight:700;font-size:16px;color:var(--INK)}
 .card .veh-info{font-size:13px;color:var(--TX);margin-top:2px}
 .card .veh-plate{font-size:11px;color:var(--GR);margin-top:2px;font-family:monospace}
-.card-arrow{color:var(--GR);font-size:22px}
+.card-arrow{color:#C4C8CF;font-size:20px}
+.veh-list{background:var(--WH);border:1px solid var(--BD);border-radius:12px;overflow:hidden}
+.veh-list .card.veh{border:0;border-bottom:1px solid #EEF0F3;border-radius:0;margin:0;padding:11px 14px}
+.veh-list .card.veh:last-child{border-bottom:0}
+.veh-list .card.veh:active{background:#F9FAFB}
+.veh-l1{display:flex;align-items:baseline;gap:8px}
+.veh-l1 .veh-id{font-size:15px}
+.veh-l1 .veh-plate{margin:0;font-size:12px}
+.veh-l2{display:flex;align-items:center;gap:8px;margin-top:3px;min-width:0}
+.veh-l2 .veh-info{margin:0;font-size:13px;color:var(--GR);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.veh-tag{font-size:10.5px;font-weight:600;color:#4B5563;background:#F3F4F6;border-radius:5px;padding:1px 6px;white-space:nowrap;flex-shrink:0}
+.veh-tag.cache{color:#1E40AF;background:#EFF6FF}
 .list-count{font-size:12px;color:var(--GR);margin-bottom:8px}
 .empty{text-align:center;padding:40px 16px;color:var(--GR)}
 .empty-icon{font-size:56px}
@@ -67,11 +78,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .item-card{background:var(--WH);border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--BD)}
 .item-name{font-weight:600;font-size:14px;color:var(--TX);margin-bottom:6px}
 .item-btns{display:flex;gap:6px}
-.item-btn{flex:1;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1px solid var(--BD);background:var(--WH);color:var(--GR)}
-.item-btn.ok{background:#DCFCE7;color:#166534;border-color:#86EFAC}
-.item-btn.na{background:#F3F4F6;color:var(--GR);border-color:#D1D5DB}
-.item-btn.dmg{background:var(--DM);color:var(--WH);border-color:var(--DM)}
-.item-btn.ok.selected,.item-btn.na.selected,.item-btn.dmg.selected{box-shadow:0 0 0 2px rgba(17,24,39,.25)}
+.item-btn{flex:1;padding:9px 8px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid var(--BD);background:var(--WH);color:var(--GR)}
+.item-btn.ok{color:#15803D}
+.item-btn.dmg{color:#B91C1C}
+.item-btn.ok.selected{background:#DCFCE7;color:#166534;border-color:#86EFAC}
+.item-btn.na.selected{background:#E5E7EB;color:#374151;border-color:#D1D5DB}
+.item-btn.dmg.selected{background:var(--DM);color:var(--WH);border-color:var(--DM)}
+.item-btns:has(.selected) .item-btn:not(.selected){opacity:.55}
 .dmg-info{margin-top:8px;padding:8px;background:#FEF2F2;border-radius:8px;border-left:3px solid var(--DM);font-size:12px}
 .dmg-photos{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .dmg-photos img{width:44px;height:44px;object-fit:cover;border-radius:6px}
@@ -140,7 +153,48 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .copy-dmg-info{flex:1;min-width:0}
 .copy-dmg-name{font-weight:600;font-size:13px;color:var(--TX)}
 .copy-dmg-meta{font-size:11px;color:var(--GR);font-family:monospace}
+.set-group{font-size:11px;font-weight:600;color:var(--GR);text-transform:uppercase;letter-spacing:.8px;margin:18px 4px 8px}
+.set-group:first-child{margin-top:4px}
+.set-row{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:7px 0;border-bottom:1px solid #F1F2F4;color:var(--GR)}
+.set-row b{font-weight:600;color:var(--INK);text-align:right;word-break:break-all}
+.set-err{font-size:12.5px;color:#B91C1C;margin-top:8px}
+.set-logout{color:#B91C1C!important;border-color:#F3D0D0!important}
+.dlg-ov{position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:600;display:flex;align-items:flex-end;justify-content:center;padding:16px}
+@media(min-width:521px){.dlg-ov{align-items:center}}
+.dlg{background:var(--WH);border-radius:16px;padding:20px;width:100%;max-width:420px}
+.dlg h3{font-size:16px;font-weight:700;color:var(--INK);margin-bottom:6px}
+.dlg p{font-size:13.5px;color:var(--GR);line-height:1.5;white-space:pre-line}
+.dlg input{width:100%;margin-top:12px;padding:11px 12px;border:1px solid var(--BD);border-radius:10px;font-size:15px;outline:none;color:var(--TX)}
+.dlg input:focus{border-color:#9CA3AF}
+.dlg-btns{display:flex;gap:8px;margin-top:18px}
+.dlg-btns button{flex:1;padding:12px;border-radius:10px;font-weight:600;font-size:14px}
+.dlg-cancel{border:1px solid var(--BD)!important;background:var(--WH)!important;color:var(--TX)}
+.dlg-ok{background:var(--INK)!important;color:var(--WH)!important}
+.dlg-ok.danger{background:var(--DM)!important}
 </style>
+<script>
+function uiDialog(o){return new Promise(res=>{
+  const msg=String(o.msg||'');const parts=msg.split(/\n\n/);
+  const title=o.title||((parts.length>1||msg.length<80)?parts.shift():'');
+  const ov=document.createElement('div');ov.className='dlg-ov';
+  ov.innerHTML=`<div class="dlg" role="dialog" aria-modal="true">${title?'<h3></h3>':''}${parts.length?'<p></p>':''}${o.input!=null?'<input>':''}<div class="dlg-btns">${o.cancel===null?'':'<button class="dlg-cancel"></button>'}<button class="dlg-ok ${o.danger?'danger':''}"></button></div></div>`;
+  if(title)ov.querySelector('h3').textContent=title;
+  if(parts.length)ov.querySelector('p').textContent=parts.join('\n\n');
+  const inp=ov.querySelector('input');if(inp)inp.value=o.input;
+  const okB=ov.querySelector('.dlg-ok'),cB=ov.querySelector('.dlg-cancel');
+  okB.textContent=o.ok||'Aceptar';if(cB)cB.textContent=o.cancel||'Cancelar';
+  const done=v=>{ov.remove();document.removeEventListener('keydown',kd,true);res(v);};
+  const kd=e=>{if(e.key==='Escape'){e.preventDefault();done(o.cancel===null?true:null);}else if(e.key==='Enter'){e.preventDefault();done(inp?inp.value:true);}};
+  okB.onclick=e=>{e.stopPropagation();done(inp?inp.value:true);};
+  if(cB)cB.onclick=e=>{e.stopPropagation();done(null);};
+  ov.onclick=e=>{e.stopPropagation();if(e.target===ov&&o.cancel!==null)done(null);};
+  document.addEventListener('keydown',kd,true);document.body.appendChild(ov);
+  if(inp){inp.focus();inp.select();}
+});}
+window.uiConfirm=(msg,o={})=>uiDialog({msg,...o}).then(v=>v!==null);
+window.uiPrompt=(msg,def='',o={})=>uiDialog({msg,input:def==null?'':String(def),...o});
+window.uiAlert=(msg,o={})=>uiDialog({msg,cancel:null,...o});
+</script>
 </head>
 <body>
 <div id="app"></div>
@@ -584,9 +638,9 @@ async function loadRecord(r){
   render();
 }
 
-function backToHome(){
+async function backToHome(){
   if(state.currentInsp&&!state.editingId){
-    if(!confirm('¿Descartar esta inspección sin guardar?'))return;
+    if(!(await uiConfirm('¿Descartar esta inspección sin guardar?', {ok:'Descartar',danger:true})))return;
   }
   state.currentInsp=null;
   state.editingId=null;
@@ -669,7 +723,7 @@ async function saveInspection(){
 }
 
 async function deleteRecord(id){
-  if(!confirm('¿Borrar esta inspección? No se puede deshacer.'))return;
+  if(!(await uiConfirm('¿Borrar esta inspección? No se puede deshacer.', {ok:'Borrar',danger:true})))return;
   try{
     const rec=state.records.find(r=>r.id===id);
     await dbDelete('inspections',id);
@@ -763,15 +817,15 @@ async function exportCache(){
 async function clearAllInspections(){
   const count=state.records.length;
   if(count===0){toast('No hay nada que borrar');return;}
-  if(!confirm(`¿Borrar TODAS las ${count} inspecciones del historial?\n\nSE VA A DESCARGAR UN BACKUP AUTOMÁTICO antes de borrar.\n\nEsto NO borra:\n• Cache de daños\n• Flota\n• Offsets de revisiones\n\nÚtil para arrancar con historial limpio y que la numeración empiece desde el offset de OneDrive.`))return;
-  if(!confirm(`Última confirmación: ¿borrar ${count} inspecciones? (Se descarga backup antes)`))return;
+  if(!(await uiConfirm(`¿Borrar TODAS las ${count} inspecciones del historial?\n\nSE VA A DESCARGAR UN BACKUP AUTOMÁTICO antes de borrar.\n\nEsto NO borra:\n• Cache de daños\n• Flota\n• Offsets de revisiones\n\nÚtil para arrancar con historial limpio y que la numeración empiece desde el offset de OneDrive.`, {ok:'Borrar',danger:true})))return;
+  if(!(await uiConfirm(`Última confirmación: ¿borrar ${count} inspecciones? (Se descarga backup antes)`, {ok:'Borrar',danger:true})))return;
   try{
     // BACKUP AUTOMÁTICO antes de tocar nada
     try{
       const ts=new Date().toISOString().slice(0,16).replace(/[T:]/g,'-');
       downloadText(JSON.stringify(state.records,null,2),`BACKUP_ANTES_DE_BORRAR_${ts}.json`,'application/json');
     }catch(e){
-      alert('No se pudo descargar el backup. Se aborta el borrado. Detalle: '+(e.message||e));
+      await uiAlert('No se pudo descargar el backup. Se aborta el borrado. Detalle: '+(e.message||e));
       return;
     }
     // Recién ahora borro (SOLO el store 'inspections')
@@ -791,14 +845,14 @@ async function clearAllInspections(){
 }
 
 async function editSingleOffset(){
-  const raw=prompt('¿Qué vehículo? (ej: AC-271)');
+  const raw=(await uiPrompt('¿Qué vehículo? (ej: AC-271)'));
   if(!raw)return;
   // Normalizar entrada: mayúsculas + trim
   const vehId=raw.trim().toUpperCase();
   // Buscar case-insensitive en las keys existentes
   const existingKey=Object.keys(state.revOffsets).find(k=>k.toUpperCase()===vehId);
   const current=existingKey?state.revOffsets[existingKey]:0;
-  const nuevo=prompt(`Offset actual de ${vehId}: ${current}\n\n¿Nuevo valor? (número máximo (N) que existe en OneDrive)\n\nEjemplo: si el archivo más alto en OneDrive es (5), poné 5.`,current);
+  const nuevo=(await uiPrompt(`Offset actual de ${vehId}: ${current}\n\n¿Nuevo valor? (número máximo (N) que existe en OneDrive)\n\nEjemplo: si el archivo más alto en OneDrive es (5), poné 5.`,current));
   if(nuevo===null)return;
   const n=parseInt(nuevo,10);
   if(isNaN(n)||n<0){toast('Debe ser un número >= 0','err');return;}
@@ -819,7 +873,7 @@ async function editSingleOffset(){
 async function darDeBaja(vehId){
   const v=state.fleet.find(f=>f.id===vehId);
   const nombre=v?`${v.id} · ${v.plate||''}`:vehId;
-  if(!confirm(`¿Dar de baja ${nombre}?\n\nDejará de aparecer en la flota activa, pero su historial de revisiones se conserva. Podés reactivarlo cuando quieras.`))return;
+  if(!(await uiConfirm(`¿Dar de baja ${nombre}?\n\nDejará de aparecer en la flota activa, pero su historial de revisiones se conserva. Podés reactivarlo cuando quieras.`, {ok:'Dar de baja',danger:true})))return;
   try{
     state.bajas[vehId]=true;
     await dbPut('meta',{key:'bajas',value:state.bajas});
@@ -857,7 +911,7 @@ async function importRevOffsets(file){
 }
 
 async function resetRevOffsets(){
-  if(!confirm('¿Borrar todos los offsets de revisiones? Los próximos archivos empezarán en (1).'))return;
+  if(!(await uiConfirm('¿Borrar todos los offsets de revisiones? Los próximos archivos empezarán en (1).', {ok:'Borrar',danger:true})))return;
   try{
     await dbDelete('meta','revOffsets').catch(()=>{});
     state.revOffsets={};
@@ -942,7 +996,7 @@ async function importFleetFile(file){
 }
 
 async function resetFleet(){
-  if(!confirm('¿Restaurar la flota original de '+DEFAULT_FLEET.length+' vehículos? Se perderá la flota importada.'))return;
+  if(!(await uiConfirm('¿Restaurar la flota original de '+DEFAULT_FLEET.length+' vehículos? Se perderá la flota importada.', {ok:'Restaurar'})))return;
   try{
     await dbDelete('meta','fleet').catch(()=>{});
     state.fleet=DEFAULT_FLEET;
@@ -1026,7 +1080,7 @@ function renderHome(){
       <div class="hdr-top">
         <div><img class="logo" src="logo-acllar.png" alt="AC·LLAR">${typeof nubePill==='function'?nubePill():''}</div>
         <div style="display:flex;gap:6px;align-items:center">
-          ${window.acRevEsAdmin && window.acRevEsAdmin() ? '<button class="btn-emergency" data-action="rescue">Rescate</button>' : ""}
+          ${window.acRevEsAdmin && window.acRevEsAdmin() ? '<button class="icon-btn" style="width:auto;padding:0 12px;font-size:13px;font-weight:600;color:var(--TX)" data-action="rescue">Rescate</button>' : ""}
           <button class="icon-btn" aria-label="Ajustes" data-action="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:block"><path d="M10.3 4.3c.4-1.7 2.9-1.7 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.6c.9 1.5-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.5 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1c-1.5.9-3.3-.9-2.4-2.4a1.7 1.7 0 0 0-1-2.6c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
@@ -1064,17 +1118,16 @@ function renderFleet(){
       ${sedes.map(s=>`<button class="chip ${state.sedeF===(s==='Todas'?'':s)?'active':''}" data-sede="${s==='Todas'?'':s}">${s}</button>`).join('')}
     </div>
     <div class="list-count">${filtered.length} vehículos</div>
-    ${filtered.map(v=>{
+    <div class="veh-list">${filtered.map(v=>{
       const hasCache=state.cache[v.id];
       return `<div class="card veh" data-veh-id="${v.id}">
-        <div style="flex:1">
-          <div class="veh-id">${v.id}${hasCache?' <span style="font-size:11px;background:#DBEAFE;color:#1E40AF;padding:1px 6px;border-radius:6px;font-weight:700">✓ CACHÉ</span>':''}</div>
-          <div class="veh-info">${v.brand||''} ${v.model||''}</div>
-          <div class="veh-plate">${v.plate||''} · ${v.sede||''}</div>
+        <div style="flex:1;min-width:0">
+          <div class="veh-l1"><span class="veh-id">${v.id}</span><span class="veh-plate">${v.plate||''}</span>${hasCache?'<span class="veh-tag cache">Daños previos</span>':''}</div>
+          <div class="veh-l2"><span class="veh-info">${v.brand||''} ${v.model||''}</span>${v.sede?`<span class="veh-tag">${v.sede}</span>`:''}</div>
         </div>
         <div class="card-arrow">›</div>
       </div>`;
-    }).join('')}
+    }).join('')}</div>
   `;
 }
 
@@ -1890,6 +1943,6 @@ async function init(){
 // init() lo lanza nube-rev.js
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="nube-rev.js?v=7"></script>
+<script src="nube-rev.js?v=8"></script>
 </body>
 </html>
