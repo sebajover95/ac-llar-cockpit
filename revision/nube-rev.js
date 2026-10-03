@@ -352,7 +352,10 @@
     } catch (e) { toast("Error: " + (e.message || e), "err"); }
   };
 
+  const esAdmin = () => String(Nube.user || "").trim().toLowerCase() === "sebastian@ac-llar.com";
+  window.acRevEsAdmin = esAdmin;
   window.rescueAll = async function () {
+    if (!esAdmin()) return;
     const ts = new Date().toISOString().slice(0, 16).replace(/[T:]/g, "-");
     downloadText(JSON.stringify(state.records.map(stripLocal), null, 2), `HISTORIAL_${ts}.json`, "application/json");
     toast("Historial descargado (sin fotos; las fotos están en la nube)", "ok");
@@ -397,6 +400,7 @@
     }
   }
   window.importInspections = async function (file) {
+    if (!esAdmin()) return;
     if (!online()) { toast("Necesitas conexión para traer el historial", "err"); return; }
     if (Nube.importing) return;
     Nube.importing = { done: 0, skip: 0, err: 0, total: 0 };
@@ -463,7 +467,7 @@
         <div class="settings-desc">La nube asigna el número (N) de cada OT, sin repetir aunque revisen varias personas. Vehículos con número inicial de OneDrive: <b>${offs}</b>.</div>
         <button class="settings-btn" data-action="edit-single-offset">✏️ Ajustar número inicial de un vehículo</button>
       </div>
-      <div class="settings-section">
+      ${esAdmin() ? `      <div class="settings-section">
         <div class="settings-title">📥 Traer historial de la app antigua</div>
         <div class="settings-desc">Carga el JSON de "🆘 Rescate" de la app anterior. Se sube como historial (NO va al cockpit como pendiente: esas OT ya están en el cockpit). Hazlo desde el PC con wifi y no cierres la página hasta que termine. Si se corta, vuelve a cargar el mismo archivo: salta las que ya subió.</div>
         <label class="settings-btn" style="display:block;text-align:center">📥 Importar historial JSON
@@ -475,6 +479,7 @@
         <div class="settings-desc">Descarga los datos de todas las revisiones (sin fotos).</div>
         <button class="settings-btn" data-action="rescue">🆘 Descargar historial (datos)</button>
       </div>
+` : ""}
     </div>`;
   };
 

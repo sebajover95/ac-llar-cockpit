@@ -37,6 +37,10 @@
     } catch { return Math.random().toString(36).slice(2, 10); }
   })();
   let userEmail = "";
+  // Único usuario que puede sacar copias de datos (archivar, backups, restaurar).
+  const ADMIN = "sebastian@ac-llar.com";
+  const esAdmin = () => userEmail.trim().toLowerCase() === ADMIN;
+  window.acllarEsAdmin = esAdmin;
   const who = () => userEmail + "·" + DEVICE;
 
   // ================= utilidades =================
@@ -597,6 +601,7 @@
     },
     // pedir=true: abrir el selector para (re)elegir la carpeta.
     async archivar({ pedir = false, onProgress } = {}) {
+      if (!esAdmin()) throw new Error("Solo el administrador puede archivar.");
       let dir = pedir ? null : await hGet("onedrive");
       if (dir) {
         const perm = await dir.requestPermission({ mode: "readwrite" });
@@ -657,7 +662,7 @@
   };
 
   window.acllarCloud = {
-    sb, buzon, flushAll, revisiones, archivo, device: DEVICE, empty: false,
+    sb, buzon, flushAll, revisiones, archivo, device: DEVICE, empty: false, esAdmin,
     MAIN_KEY, QUANT_DOCS,
     // La app avisa de que ya recargó un doc tras un cambio remoto.
     ack(doc) { delete awaiting[doc]; },

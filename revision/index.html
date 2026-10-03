@@ -1022,7 +1022,7 @@ function renderHome(){
       <div class="hdr-top">
         <div><h1>AC·LLAR</h1><div class="sub">vacaciones en autocaravana</div>${typeof nubePill==='function'?nubePill():''}</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="btn-emergency" data-action="rescue">🆘 Rescate</button>
+          ${window.acRevEsAdmin && window.acRevEsAdmin() ? '<button class="btn-emergency" data-action="rescue">🆘 Rescate</button>' : ""}
           <button class="btn-emergency" style="background:#F1F5F9;color:#374151;border-color:#CBD5E1" data-action="settings">⚙️</button>
         </div>
       </div>
@@ -1887,6 +1887,6 @@ async function init(){
 // init() lo lanza nube-rev.js
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="nube-rev.js?v=4"></script>
+<script src="nube-rev.js?v=6"></script>
 </body>
 </html>
