@@ -112,6 +112,29 @@
   }
   const hydrate = (rec) => mapPhotos(rec, resolvePhoto);
 
+  // Red de seguridad: cualquier <img> que se pinte con una referencia "sb:"
+  // (p. ej. la caché de "daños previos" reconstruida tras una sincronización)
+  // se resuelve al vuelo con la foto real (móvil o nube).
+  const BLANK_IMG = "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==";
+  function fixImg(img) {
+    const ref = img.getAttribute("src");
+    if (!ref || !ref.startsWith("sb:")) return;
+    img.dataset.sbRef = ref;
+    img.src = BLANK_IMG;
+    resolvePhoto(ref).then((url) => { if (img.dataset.sbRef === ref) img.src = url; });
+  }
+  new MutationObserver((muts) => {
+    for (const m of muts) {
+      if (m.type === "attributes") { if (m.target.tagName === "IMG") fixImg(m.target); continue; }
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (n.tagName === "IMG") fixImg(n);
+        else if (n.querySelectorAll) n.querySelectorAll('img[src^="sb:"]').forEach(fixImg);
+      }
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
+  document.querySelectorAll('img[src^="sb:"]').forEach(fixImg);
+
   // ================= caché de daños (sale del historial) =================
   function recomputeCache() {
     const latest = {};
