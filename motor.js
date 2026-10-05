@@ -1777,6 +1777,36 @@ const inicioOT =
       } }, "pronto")
     );
   })));
+  function SessionGear() {
+    const [open, setOpen] = React.useState(false);
+    const ref = React.useRef(null);
+    React.useEffect(() => {
+      if (!open) return;
+      const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+      const k = (e) => { if (e.key === "Escape") setOpen(false); };
+      document.addEventListener("mousedown", h); document.addEventListener("keydown", k);
+      return () => { document.removeEventListener("mousedown", h); document.removeEventListener("keydown", k); };
+    }, [open]);
+    const C = window.acllarCloud || {};
+    const email = C.usuario ? C.usuario() : "";
+    const admin = !!(window.acllarEsAdmin && window.acllarEsAdmin());
+    const fila = (label, valor, mono) => React.createElement("div", { style: { marginBottom: "10px" } },
+      React.createElement("div", { style: { fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, color: T.inkFaint, marginBottom: "3px" } }, label),
+      React.createElement("div", { style: { fontSize: "13px", fontWeight: 600, color: T.ink, fontFamily: mono ? F.mono : F.body, wordBreak: "break-all" } }, valor));
+    const salir = async () => { try { if (C.flushAll) await C.flushAll(); } catch (e) {} try { await C.sb.auth.signOut(); } catch (e) {} location.reload(); };
+    return React.createElement("div", { ref, style: { position: "relative" } },
+      React.createElement("button", { onClick: () => setOpen(!open), title: "Sesión y ajustes", "aria-label": "Sesión y ajustes", "aria-expanded": open,
+        style: { cursor: "pointer", lineHeight: 0, color: T.inkSoft, background: open ? T.border : T.surface, border: `1px solid ${T.border}`, borderRadius: "12px", padding: "7px 9px" } },
+        React.createElement("svg", { width: 17, height: 17, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" },
+          React.createElement("path", { d: "M10.3 4.3c.4-1.7 2.9-1.7 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.4 2.4a1.7 1.7 0 0 0 1 2.5c1.8.5 1.8 3 0 3.5a1.7 1.7 0 0 0-1 2.6c.9 1.5-.9 3.3-2.4 2.4a1.7 1.7 0 0 0-2.6 1c-.5 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1c-1.5.9-3.3-.9-2.4-2.4a1.7 1.7 0 0 0-1-2.6c-1.8-.5-1.8-3 0-3.5a1.7 1.7 0 0 0 1-2.5c-.9-1.6.9-3.3 2.4-2.4a1.7 1.7 0 0 0 2.6-1.1z" }),
+          React.createElement("circle", { cx: 12, cy: 12, r: 3 }))),
+      open && React.createElement("div", { role: "dialog", "aria-label": "Sesión", style: { position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 9500, width: "270px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: "14px", boxShadow: "0 12px 32px rgba(15,27,46,.18)", padding: "16px", fontFamily: F.body, textAlign: "left" } },
+        React.createElement("div", { style: { fontFamily: F.display, fontSize: "15px", fontWeight: 700, color: T.ink, marginBottom: "12px" } }, "Cuenta"),
+        fila("Sesión iniciada", email || "—"),
+        fila("Permisos", admin ? "Administrador (copias de seguridad y archivo)" : "Usuario"),
+        fila("Este equipo", C.device || "—", true),
+        React.createElement("button", { onClick: salir, style: { width: "100%", marginTop: "4px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.bg, color: T.danger, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Cerrar sesión")));
+  }
   const Header = ({ onBackup, onImport, lastBackupAt, backupReminder, onDismissReminder, onToggleWatch, watchStatus, theme, onToggleTheme }) => /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("header", { style: { background: T.bg, padding: "20px 28px 18px" } }, /* @__PURE__ */ React.createElement("div", { style: {
     maxWidth: "1280px",
     margin: "0 auto",
@@ -1816,7 +1846,7 @@ const inicioOT =
       title: watchStatus === "active" ? "Auto-importaci\xF3n activa. Clic para detener." : "Vincular carpeta de OneDrive para importar OT autom\xE1ticamente"
     },
     watchStatus === "active" ? "Auto \u25CF" : "Auto-OT"
-  ), /* @__PURE__ */ (window.acllarEsAdmin && window.acllarEsAdmin()) && React.createElement(Btn, { variant: "secondary", onClick: onBackup, icon: Database, sm: true }, "Backup")))), backupReminder && /* @__PURE__ */ React.createElement("div", { style: {
+  ), /* @__PURE__ */ (window.acllarEsAdmin && window.acllarEsAdmin()) && React.createElement(Btn, { variant: "secondary", onClick: onBackup, icon: Database, sm: true }, "Backup"), React.createElement(SessionGear, null)))), backupReminder && /* @__PURE__ */ React.createElement("div", { style: {
     background: backupReminder.level === "warn" ? "#E9EEFC" : "#EEF2F8",
     borderTop: `1px solid ${backupReminder.level === "warn" ? "#CBD5E6" : "#CBD5E6"}`,
     borderBottom: `1px solid ${backupReminder.level === "warn" ? "#CBD5E6" : "#CBD5E6"}`,

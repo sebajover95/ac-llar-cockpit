@@ -146,12 +146,6 @@
     badge.className = "nube-" + kind;
     badge.innerHTML = "";
     const t = document.createElement("span"); t.textContent = text; badge.appendChild(t);
-    if (userEmail) {
-      const out = document.createElement("button");
-      out.textContent = "Salir"; out.title = "Cerrar sesión (" + userEmail + ")";
-      out.onclick = async () => { await flushAll(); await sb.auth.signOut(); location.reload(); };
-      badge.appendChild(out);
-    }
   }
   function refreshBadge() {
     const n = Object.keys(pending).length;
@@ -663,6 +657,7 @@
 
   window.acllarCloud = {
     sb, buzon, flushAll, revisiones, archivo, device: DEVICE, empty: false, esAdmin,
+    usuario: () => userEmail,
     MAIN_KEY, QUANT_DOCS,
     // La app avisa de que ya recargó un doc tras un cambio remoto.
     ack(doc) { delete awaiting[doc]; },
