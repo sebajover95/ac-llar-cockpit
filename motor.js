@@ -1241,6 +1241,7 @@ const inicioOT =
     try {
       if (typeof window !== "undefined" && window.storage?.set) {
         await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+        try { window.dispatchEvent(new Event("acllar-main-saved")); } catch (e) {}
         return true;
       }
     } catch (err) {
@@ -6550,8 +6551,11 @@ return /* @__PURE__ */ React.createElement("tr", { key: r.id || i, style: { back
     useEffect(() => {
       loadRecambiosParts();
       const onFocus = () => loadRecambiosParts();
+      const onRemote = (ev) => { if (ev && ev.detail && ev.detail.key === "ac-cockpit-data-v1") loadRecambiosParts(); };
       window.addEventListener("focus", onFocus);
-      return () => window.removeEventListener("focus", onFocus);
+      window.addEventListener("acllar-main-saved", onFocus);
+      window.addEventListener("acllar-remote-update", onRemote);
+      return () => { window.removeEventListener("focus", onFocus); window.removeEventListener("acllar-main-saved", onFocus); window.removeEventListener("acllar-remote-update", onRemote); };
     }, [loadRecambiosParts]);
     const [tab, setTab] = useState("piezas");
     const [piezaSubTab, setPiezaSubTab] = useState("form");
@@ -6831,23 +6835,39 @@ const saveHistory = (h) => {
         setShowPiSug(false);
         return;
       }
+      // Recambios es la fuente del precio: se aplanan las piezas de cada pedido y,
+      // por código, manda el precio editado más recientemente.
+      const codeOf = (codigo, texto) => {
+        const c = String(codigo || "").trim().toUpperCase();
+        if (c) return c.split(/\s+-\s+/)[0].trim();
+        const m = String(texto || "").toUpperCase().match(/\b(?=[0-9A-Z]*\d)[0-9A-Z]{8,}\b/);
+        return m ? m[0] : "";
+      };
+      const recPiezas = [];
+      for (const p of recambiosParts || []) {
+        const lista = Array.isArray(p.piezas) && p.piezas.length ? p.piezas : [p];
+        for (const pz of lista) recPiezas.push({ codigo: pz.codigo || p.codigo || "", descripcion: pz.descripcion || p.descripcion || "", notas: pz.notas || p.notas || "", pvrOficial: pz.pvrOficial != null ? pz.pvrOficial : (lista === p.piezas ? null : p.pvrOficial), horasMO: pz.horasMO != null ? pz.horasMO : p.horasMO, _at: pz.precioAt || p.precioAt || p.createdAt || "" });
+      }
+      const precioRec = {};
+      for (const pz of recPiezas) {
+        if (pz.pvrOficial == null || pz.pvrOficial === "") continue;
+        const c = codeOf(pz.codigo, pz.descripcion);
+        if (!c) continue;
+        if (!precioRec[c] || String(pz._at) > String(precioRec[c]._at)) precioRec[c] = { pvr: pz.pvrOficial, _at: pz._at };
+      }
       const repoHits = repo.map((r) => {
         const memKey = Object.keys(piezaMemory).find((k) => k === r.descripcion.toLowerCase().trim() || k.includes(r.descripcion.toLowerCase().trim().slice(0, 10)));
         const notas = memKey ? piezaMemory[memKey]?.notas || "" : r.notas || "";
         return { r, memKey, notas };
       }).filter(({ r, notas }) => r.descripcion.toLowerCase().includes(q) || (r.codigo || "").toLowerCase().includes(q) || notas.toLowerCase().includes(q)).map(({ r, memKey, notas }) => {
         const horas = r.horas != null && r.horas !== "" ? r.horas : memKey ? piezaMemory[memKey]?.horas : null;
-        return { label: r.descripcion, codigo: r.codigo, pvr: r.pvr, horas, proveedor: r.proveedor || "", marca: r.marca, notas, fromRepo: true };
+        const pr = precioRec[codeOf(r.codigo, r.descripcion)];
+        return { label: r.descripcion, codigo: r.codigo, pvr: pr && Number(r.pvr) > 0 ? pr.pvr : r.pvr, horas, proveedor: r.proveedor || "", marca: r.marca, notas, fromRepo: true };
       });
-      const recHits = (recambiosParts || []).filter((p) => (p.pvrOficial != null || p.horasMO != null) && ((p.descripcion || "").toLowerCase().includes(q) || (p.codigo || "").toLowerCase().includes(q) || (p.notas || "").toLowerCase().includes(q))).map((p) => ({
-        label: p.descripcion || p.codigo || "",
-        codigo: p.codigo || "",
-        pvr: p.pvrOficial != null ? p.pvrOficial : null,
-        horas: p.horasMO != null ? p.horasMO : null,
-        notas: p.notas || "",
-        proveedor: "",
-        fromRecambios: true
-      })).filter((p, i, arr) => arr.findIndex((x) => (x.label || "").toLowerCase().trim() === (p.label || "").toLowerCase().trim()) === i);
+      const recHits = recPiezas.filter((p) => (p.pvrOficial != null || p.horasMO != null) && ((p.descripcion || "").toLowerCase().includes(q) || (p.codigo || "").toLowerCase().includes(q) || (p.notas || "").toLowerCase().includes(q))).map((p) => {
+        const pr = precioRec[codeOf(p.codigo, p.descripcion)];
+        return { label: p.descripcion || p.codigo || "", codigo: p.codigo || "", pvr: pr ? pr.pvr : (p.pvrOficial != null ? p.pvrOficial : null), horas: p.horasMO != null ? p.horasMO : null, notas: p.notas || "", proveedor: "", fromRecambios: true };
+      }).filter((p, i, arr) => arr.findIndex((x) => (x.label || "").toLowerCase().trim() === (p.label || "").toLowerCase().trim()) === i);
       const recLabels = new Set(recHits.map((r) => (r.label || "").toLowerCase().trim()));
       const memHits = Object.keys(piezaMemory).filter((k) => {
         if (repoHits.some((r) => r.label.toLowerCase().trim() === k)) return false;
@@ -7899,6 +7919,7 @@ const findHqReservaActual = async (vehicleId) => {
       }];
 
   const actualizarPieza = (piezaId, cambios) => {
+    if (cambios && Object.prototype.hasOwnProperty.call(cambios, "pvrOficial")) cambios = { ...cambios, precioAt: new Date().toISOString() };
     const nuevasPiezas = piezas.map((pieza) =>
       pieza.id === piezaId ? { ...pieza, ...cambios } : pieza
     );
