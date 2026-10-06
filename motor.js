@@ -1777,6 +1777,63 @@ const inicioOT =
       } }, "pronto")
     );
   })));
+  function HqStatus() {
+    const [est, setEst] = React.useState(null);
+    const [open, setOpen] = React.useState(false);
+    const [, tick] = React.useState(0);
+    const ref = React.useRef(null);
+    React.useEffect(() => {
+      const B = window.acllarCloud && window.acllarCloud.buzon;
+      if (!B || !B.estado) return;
+      let vivo = true;
+      const load = async () => { try { const e = await B.estado(); if (vivo) setEst(e); } catch (e) { console.warn("[Datos HQ]", e); } };
+      load();
+      const iv = setInterval(() => { load(); tick((n) => n + 1); }, 60000);
+      const on = () => setTimeout(load, 1500);
+      window.addEventListener("acllar-buzon", on); window.addEventListener("acllar-buzon-estado", on);
+      document.addEventListener("visibilitychange", on);
+      return () => { vivo = false; clearInterval(iv); window.removeEventListener("acllar-buzon", on); window.removeEventListener("acllar-buzon-estado", on); document.removeEventListener("visibilitychange", on); };
+    }, []);
+    React.useEffect(() => {
+      if (!open) return;
+      const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+      const k = (e) => { if (e.key === "Escape") setOpen(false); };
+      document.addEventListener("mousedown", h); document.addEventListener("keydown", k);
+      return () => { document.removeEventListener("mousedown", h); document.removeEventListener("keydown", k); };
+    }, [open]);
+    if (!est) return null;
+    const dia = (d) => { const x = new Date(d); return new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime(); };
+    const hhmm = (d) => new Date(d).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    const cuando = (d) => { const n = Math.round((dia(Date.now()) - dia(d)) / 864e5); return n <= 0 ? "hoy " + hhmm(d) : n === 1 ? "ayer " + hhmm(d) : "hace " + n + " días"; };
+    const fechaLarga = (d) => new Date(d).toLocaleString("es-ES", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    const VERDE = T.ok, AMBAR = T.warn, ROJO = T.danger;
+    const info = (num, f) => {
+      if (!f) return { num, color: T.inkFaint, txt: "sin datos", aviso: `Todavía no ha llegado ningún archivo ${num}.` };
+      const hoy = dia(f.recibido_at) === dia(Date.now());
+      if (f.estado === "importado") return hoy ? { num, color: VERDE, icono: "✓", txt: cuando(f.recibido_at), f } : { num, color: AMBAR, txt: cuando(f.recibido_at), f, aviso: `Aún no ha llegado el ${num} de hoy. Reenvía el email de HQ que acaba en ${num}.` };
+      const min = (Date.now() - Date.parse(f.recibido_at)) / 60000;
+      if (min < 3) return { num, color: T.inkSoft, txt: "importando…", f };
+      return { num, color: ROJO, txt: "sin importar", f, aviso: `Llegó el ${num} (${fechaLarga(f.recibido_at)}) pero no se ha podido importar. Abre o recarga el cockpit; si sigue así, avisa.` };
+    };
+    const items = [info("704", est.estasemana), info("720", est.enalquiler)];
+    const quien = (q) => { if (!q) return "—"; const [mail, eq] = String(q).split("·"); return eq ? `${mail} (equipo ${eq})` : mail; };
+    const titulo = items.filter((i) => i.aviso).map((i) => i.aviso).join("\n") || "Datos de HQ al día";
+    return React.createElement("div", { ref, style: { position: "relative" } },
+      React.createElement("button", { onClick: () => setOpen(!open), title: titulo, "aria-label": "Datos HQ", "aria-expanded": open,
+        style: { cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", background: open ? T.border : T.surface, border: `1px solid ${T.border}`, borderRadius: "12px", padding: "6px 10px", fontFamily: F.body } },
+        React.createElement("span", { style: { fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, color: T.inkFaint } }, "Datos HQ"),
+        items.map((i) => React.createElement("span", { key: i.num, style: { fontSize: "11.5px", fontWeight: 700, color: i.color, whiteSpace: "nowrap", fontFamily: F.mono } }, `${i.num} ${i.icono ? i.icono + " " : ""}${i.txt}`))),
+      open && React.createElement("div", { role: "dialog", "aria-label": "Datos HQ", style: { position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 9500, width: "300px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: "14px", boxShadow: "0 12px 32px rgba(15,27,46,.18)", padding: "16px", fontFamily: F.body, textAlign: "left" } },
+        React.createElement("div", { style: { fontFamily: F.display, fontSize: "15px", fontWeight: 700, color: T.ink, marginBottom: "12px" } }, "Último input de HQ"),
+        items.map((i) => React.createElement("div", { key: i.num, style: { marginBottom: "12px", paddingBottom: "10px", borderBottom: `1px solid ${T.border}` } },
+          React.createElement("div", { style: { fontSize: "13px", fontWeight: 700, color: T.ink, marginBottom: "4px" } }, i.num === "704" ? "704 · Reservas próximos 14 días" : "720 · En alquiler"),
+          i.f ? React.createElement(React.Fragment, null,
+            React.createElement("div", { style: { fontSize: "12px", color: T.inkSoft } }, "Llegó: ", React.createElement("b", { style: { color: T.ink } }, fechaLarga(i.f.recibido_at))),
+            React.createElement("div", { style: { fontSize: "12px", color: T.inkSoft } }, "Importado: ", i.f.importado_at ? React.createElement("b", { style: { color: T.ink } }, fechaLarga(i.f.importado_at)) : "—"),
+            React.createElement("div", { style: { fontSize: "12px", color: T.inkSoft } }, "Por: ", quien(i.f.importado_por))) : null,
+          i.aviso && React.createElement("div", { style: { fontSize: "12px", fontWeight: 600, color: i.color, marginTop: "6px" } }, i.aviso))),
+        React.createElement("div", { style: { fontSize: "11px", color: T.inkFaint } }, "Se actualiza solo cuando llega un archivo nuevo.")));
+  }
   function SessionGear() {
     const [open, setOpen] = React.useState(false);
     const ref = React.useRef(null);
@@ -1830,7 +1887,7 @@ const inicioOT =
     fontWeight: 600,
     marginTop: "4px",
     fontFamily: F.body
-  } }, "Gesti\xF3n de flota"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, onToggleTheme && /* @__PURE__ */ React.createElement("button", { onClick: onToggleTheme, title: theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro", "aria-label": "Cambiar tema", style: { cursor: "pointer", fontSize: "15px", lineHeight: 1, color: T.inkSoft, background: T.surface, border: `1px solid ${T.border}`, borderRadius: "12px", padding: "7px 10px" } }, theme === "dark" ? "☀️" : "\u{1F319}"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: T.inkSoft, textAlign: "right", lineHeight: 1.3, marginRight: "4px" } }, /* @__PURE__ */ React.createElement("div", { style: {
+  } }, "Gesti\xF3n de flota"))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "10px" } }, onToggleTheme && /* @__PURE__ */ React.createElement("button", { onClick: onToggleTheme, title: theme === "dark" ? "Cambiar a tema claro" : "Cambiar a tema oscuro", "aria-label": "Cambiar tema", style: { cursor: "pointer", fontSize: "15px", lineHeight: 1, color: T.inkSoft, background: T.surface, border: `1px solid ${T.border}`, borderRadius: "12px", padding: "7px 10px" } }, theme === "dark" ? "☀️" : "\u{1F319}"), React.createElement(HqStatus, null), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: T.inkSoft, textAlign: "right", lineHeight: 1.3, marginRight: "4px" } }, /* @__PURE__ */ React.createElement("div", { style: {
     fontSize: "9px",
     textTransform: "uppercase",
     letterSpacing: "0.12em",
@@ -12554,6 +12611,7 @@ const scanResWatchFolder = async (handle) => {
               const fh = { getFile: async () => new File([blob], nombre, { lastModified: Date.parse(f.recibido_at) || Date.now() }) };
               const res = await applyResRef.current(fh);
               await B.marcar(f.id, "importado");
+              window.dispatchEvent(new Event("acllar-buzon-estado"));
               setBuzonStatus({ at: nowIso(), tipo: f.tipo, recibido: f.recibido_at });
               if (res && res.applied > 0) {
                 setResWatchLog((log) => [{ file: res.file, applied: res.applied, vehiculos: res.vehiculos, tipo: res.tipo, label: res.label + " · nube", at: nowIso() }, ...log].slice(0, 20));

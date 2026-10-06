@@ -457,6 +457,17 @@
       if (error) throw error;
       return data;
     },
+    // Último archivo de cada tipo (para el aviso "Datos HQ" de la cabecera).
+    async estado() {
+      const out = {};
+      for (const tipo of ["estasemana", "enalquiler"]) {
+        const { data, error } = await sb.from("hq_buzon").select("id, tipo, estado, recibido_at, importado_at, importado_por")
+          .eq("tipo", tipo).neq("estado", "descartado").order("recibido_at", { ascending: false }).limit(1);
+        if (error) throw error;
+        out[tipo] = (data && data[0]) || null;
+      }
+      return out;
+    },
     async marcar(id, estado) {
       const upd = { estado };
       if (estado === "pendiente") { upd.importado_por = null; upd.importado_at = null; }
