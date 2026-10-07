@@ -2413,7 +2413,8 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
     const rows = selectedDamages.map((d, i) => {
       const g = (d.gravedad || "").toUpperCase();
       const requierePiezas = d.requierePiezas === true || /requiere/i.test(d.piezasText || "");
-      return `<tr>
+      const nota = String(d.notes || "").trim();
+      return `<tr${nota ? ' class="con-nota"' : ""}>
       <td style="text-align:center;font-weight:700;color:#6b7280">${i + 1}</td>
       <td style="font-weight:600">${esc(d.zona || d.description || "Da\xF1o")}</td>
       <td>${esc(d.tipoDano || "")}</td>
@@ -2421,7 +2422,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
       <td style="text-align:center">${requierePiezas ? "\u{1F527} S\xED" : "\u2014"}</td>
       <td style="font-family:monospace;font-size:11px;color:#6b7280">${esc(d.pdfCode || "")}</td>
       <td style="text-align:center;width:48px">\u2610</td>
-    </tr>`;
+    </tr>${nota ? `<tr class="nota-row"><td></td><td colspan="6"><div class="nota-dano"><b>Instrucciones:</b> ${esc(nota).replace(/\n/g, "<br>")}</div></td></tr>` : ""}`;
     }).join("");
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orden de reparaci\xF3n ${esc(vehicle.id)}</title>
 <style>
@@ -2435,6 +2436,11 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
   th{background:#1f2937;color:white;padding:9px 8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.03em}
   td{padding:10px 8px;border-bottom:1px solid #e5e7eb}
   .note{margin-top:24px;padding:12px 16px;background:#FBF7EC;border-left:3px solid #A8350F;font-size:12px;color:#6b7280}
+  tr.con-nota td{border-bottom:none;padding-bottom:4px}
+  tr.nota-row td{padding-top:0}
+  .nota-dano{background:#FFF8E1;border:1px solid #F2D27A;border-left:4px solid #D97706;border-radius:6px;padding:8px 10px;font-size:13px;color:#1f2937;line-height:1.45}
+  .nota-dano b{color:#92400E}
+  tr{page-break-inside:avoid;break-inside:avoid}
   .foot{margin-top:30px;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}
   @media print{.noprint{display:none}body{padding:0}}
 </style></head><body>
@@ -2535,7 +2541,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         color: "white",
         fontSize: "14px",
         fontWeight: 700
-      } }, isSel ? "\u2713" : ""), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "14px", fontWeight: 600, color: T.ink } }, d.zona || d.description || "Da\xF1o"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: T.inkSoft } }, d.tipoDano || "", " ", d.pdfCode ? "\xB7 " + d.pdfCode : "")), g && /* @__PURE__ */ React.createElement("span", { style: { background: gt.bg, color: gt.c, fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "10px", flexShrink: 0 } }, g), (d.requierePiezas || /requiere/i.test(d.piezasText || "")) && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: T.inkSoft, flexShrink: 0 } }, "\u{1F527}"));
+      } }, isSel ? "\u2713" : ""), /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "14px", fontWeight: 600, color: T.ink } }, d.zona || d.description || "Da\xF1o"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: "11px", color: T.inkSoft } }, d.tipoDano || "", " ", d.pdfCode ? "\xB7 " + d.pdfCode : ""), String(d.notes || "").trim() && /* @__PURE__ */ React.createElement("div", { style: { fontSize: "12px", color: T.warn, marginTop: "3px", whiteSpace: "pre-wrap" } }, "\u{1F4DD} ", String(d.notes).trim())), g && /* @__PURE__ */ React.createElement("span", { style: { background: gt.bg, color: gt.c, fontSize: "10px", fontWeight: 700, padding: "2px 8px", borderRadius: "10px", flexShrink: 0 } }, g), (d.requierePiezas || /requiere/i.test(d.piezasText || "")) && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "10px", color: T.inkSoft, flexShrink: 0 } }, "\u{1F527}"));
     })), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "18px" } }, /* @__PURE__ */ React.createElement(Btn, { variant: "secondary", onClick: onClose }, "Cancelar"), /* @__PURE__ */ React.createElement(Btn, { variant: "primary", icon: FileUp, disabled: selected.size === 0, onClick: handleExport }, "Generar orden (", selected.size, ")"))));
   }
   const VehicleDetailView = ({
