@@ -375,6 +375,15 @@
     } catch (e) { toast("Error: " + (e.message || e), "err"); }
   };
 
+  // Presencia: identifica el equipo (navegador) de forma estable y avisa cada 2 min.
+  const EQUIPO = (() => {
+    const u = navigator.userAgent || "";
+    const os = /Android/.test(u) ? "Android" : /iPhone|iPad/.test(u) ? "iPhone" : /Windows/.test(u) ? "Windows" : /Mac OS/.test(u) ? "Mac" : /Linux/.test(u) ? "Linux" : "Equipo";
+    const br = /Edg\//.test(u) ? "Edge" : /SamsungBrowser/.test(u) ? "Samsung" : /Chrome\//.test(u) ? "Chrome" : /Firefox\//.test(u) ? "Firefox" : /Safari\//.test(u) ? "Safari" : "";
+    let id = "";
+    try { id = localStorage.getItem("acllar_equipo") || ""; if (!id) { id = Math.random().toString(36).slice(2, 7); localStorage.setItem("acllar_equipo", id); } } catch (e) { id = "?"; }
+    return (os + (br ? " " + br : "") + " · " + id).slice(0, 40);
+  })();
   const esAdmin = () => String(Nube.user || "").trim().toLowerCase() === "sebastian@ac-llar.com";
   window.acRevEsAdmin = esAdmin;
   window.rescueAll = async function () {
@@ -578,6 +587,9 @@
       window.addEventListener("offline", refreshPill);
       document.addEventListener("visibilitychange", () => { if (!document.hidden) syncAll(); });
       setInterval(syncAll, 60000);
+      const ping = () => { if (document.hidden || !online() || !Nube.user) return; Promise.resolve(sb.rpc("presencia_ping", { p_device: EQUIPO, p_app: "revisiones" })).catch(() => {}); };
+      ping(); setInterval(ping, 120000);
+      document.addEventListener("visibilitychange", ping);
     } catch (e) {
       document.getElementById("app").innerHTML = `<div style="padding:20px;color:#DC2626">Error inicial: ${esc(e.message || e)}</div>`;
     }

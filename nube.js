@@ -36,6 +36,15 @@
       return d;
     } catch { return Math.random().toString(36).slice(2, 10); }
   })();
+  // Presencia: identifica el equipo (navegador) de forma estable y avisa cada 2 min.
+  const EQUIPO = (() => {
+    const u = navigator.userAgent || "";
+    const os = /Android/.test(u) ? "Android" : /iPhone|iPad/.test(u) ? "iPhone" : /Windows/.test(u) ? "Windows" : /Mac OS/.test(u) ? "Mac" : /Linux/.test(u) ? "Linux" : "Equipo";
+    const br = /Edg\//.test(u) ? "Edge" : /SamsungBrowser/.test(u) ? "Samsung" : /Chrome\//.test(u) ? "Chrome" : /Firefox\//.test(u) ? "Firefox" : /Safari\//.test(u) ? "Safari" : "";
+    let id = "";
+    try { id = localStorage.getItem("acllar_equipo") || ""; if (!id) { id = Math.random().toString(36).slice(2, 7); localStorage.setItem("acllar_equipo", id); } } catch (e) { id = "?"; }
+    return (os + (br ? " " + br : "") + " · " + id).slice(0, 40);
+  })();
   let userEmail = "";
   // Único usuario que puede sacar copias de datos (archivar, backups, restaurar).
   const ADMIN = "sebastian@ac-llar.com";
@@ -543,6 +552,9 @@
     for (const doc of seed) schedule(doc);
     startRealtime();
     refreshBadge();
+    const ping = () => { if (document.hidden || !userEmail) return; Promise.resolve(sb.rpc("presencia_ping", { p_device: EQUIPO, p_app: "cockpit" })).catch(() => {}); };
+    ping(); setInterval(ping, 120000);
+    document.addEventListener("visibilitychange", ping);
   }
 
   // ---------- OT que llegan desde la app de revisiones ----------
@@ -669,6 +681,16 @@
   window.acllarCloud = {
     sb, buzon, flushAll, revisiones, archivo, device: DEVICE, empty: false, esAdmin,
     usuario: () => userEmail,
+    equipo: EQUIPO,
+    cuentas: {
+      async listar() { const { data, error } = await sb.rpc("admin_cuentas"); if (error) throw new Error(error.message); return data || []; },
+      async accion(body) {
+        const { data, error } = await sb.functions.invoke("admin-cuentas", { body });
+        if (error) { let msg = error.message; try { const j = error.context && (await error.context.json()); if (j && j.error) msg = j.error; } catch (e) {} throw new Error(msg); }
+        if (data && data.error) throw new Error(data.error);
+        return data;
+      },
+    },
     MAIN_KEY, QUANT_DOCS,
     // La app avisa de que ya recargó un doc tras un cambio remoto.
     ack(doc) { delete awaiting[doc]; },

@@ -1835,8 +1835,75 @@ const inicioOT =
           i.aviso && React.createElement("div", { style: { fontSize: "12px", fontWeight: 600, color: i.color, marginTop: "6px" } }, i.aviso))),
         React.createElement("div", { style: { fontSize: "11px", color: T.inkFaint } }, "Se actualiza solo cuando llega un archivo nuevo.")));
   }
+  function CuentasModal({ onClose }) {
+    const C = window.acllarCloud || {};
+    const [lista, setLista] = React.useState(null);
+    const [err, setErr] = React.useState("");
+    const [msg, setMsg] = React.useState("");
+    const [busy, setBusy] = React.useState(false);
+    const [nueva, setNueva] = React.useState({ email: "", password: "" });
+    const [pwFor, setPwFor] = React.useState(null);
+    const [pw, setPw] = React.useState("");
+    const [, tick] = React.useState(0);
+    const cargar = React.useCallback(async () => { try { setLista(await C.cuentas.listar()); setErr(""); } catch (e) { setErr(e.message || String(e)); } }, []);
+    React.useEffect(() => { cargar(); const iv = setInterval(() => { cargar(); tick((n) => n + 1); }, 30000); const k = (e) => { if (e.key === "Escape") onClose(); }; document.addEventListener("keydown", k); return () => { clearInterval(iv); document.removeEventListener("keydown", k); }; }, []);
+    const hace = (d) => { if (!d) return "nunca"; const m = Math.round((Date.now() - Date.parse(d)) / 60000); if (m < 1) return "ahora mismo"; if (m < 60) return "hace " + m + " min"; const h = Math.round(m / 60); if (h < 24) return "hace " + h + " h"; return new Date(d).toLocaleString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); };
+    const fecha = (d) => d ? new Date(d).toLocaleString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+    const appNom = (a) => a === "revisiones" ? "App revisiones" : a === "cockpit" ? "Cockpit" : (a || "");
+    const run = async (body, ok) => { setBusy(true); setErr(""); setMsg(""); try { await C.cuentas.accion(body); setMsg(ok); await cargar(); return true; } catch (e) { setErr(e.message || String(e)); return false; } finally { setBusy(false); } };
+    const yo = (C.usuario ? C.usuario() : "").toLowerCase();
+    const estado = (u) => {
+      if (u.desactivada) return { c: T.inkFaint, t: "Desactivada" };
+      const m = u.visto ? (Date.now() - Date.parse(u.visto)) / 60000 : Infinity;
+      if (m <= 3) return { c: T.ok, t: "Activa ahora" };
+      if (m <= 30) return { c: T.warn, t: "Activa en los últimos 30 min" };
+      return { c: T.inkFaint, t: "Sin actividad reciente" };
+    };
+    const inp = { padding: "8px 10px", borderRadius: "9px", border: `1px solid ${T.border}`, background: T.bg, color: T.ink, fontSize: "13px", fontFamily: F.body, minWidth: 0 };
+    const btn = (variant) => ({ cursor: busy ? "wait" : "pointer", padding: "7px 12px", borderRadius: "9px", fontSize: "12.5px", fontWeight: 700, fontFamily: F.body, border: `1px solid ${variant === "primary" ? T.rust : T.border}`, background: variant === "primary" ? T.rust : T.surface, color: variant === "primary" ? "#fff" : variant === "danger" ? T.danger : T.ink, whiteSpace: "nowrap" });
+    const n = (lista || []).filter((u) => !u.desactivada).length;
+    const activas = (lista || []).filter((u) => estado(u).c === T.ok).length;
+    return React.createElement("div", { onMouseDown: (e) => { if (e.target === e.currentTarget) onClose(); }, style: { position: "fixed", inset: 0, zIndex: 9800, background: "rgba(15,27,46,.45)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "6vh 16px", overflowY: "auto" } },
+      React.createElement("div", { role: "dialog", "aria-label": "Cuentas", style: { width: "100%", maxWidth: "760px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: "0 20px 50px rgba(15,27,46,.3)", padding: "22px", fontFamily: F.body, color: T.ink } },
+        React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "16px" } },
+          React.createElement("div", null,
+            React.createElement("div", { style: { fontFamily: F.display, fontSize: "19px", fontWeight: 700 } }, "Cuentas"),
+            React.createElement("div", { style: { fontSize: "12.5px", color: T.inkSoft, marginTop: "3px" } }, lista ? `${n} cuenta${n === 1 ? "" : "s"} habilitada${n === 1 ? "" : "s"} · ${activas} activa${activas === 1 ? "" : "s"} ahora · cockpit y app de revisiones` : "Cargando…")),
+          React.createElement("button", { onClick: onClose, "aria-label": "Cerrar", style: { ...btn(), padding: "6px 10px" } }, "✕")),
+        err && React.createElement("div", { style: { background: T.bg, border: `1px solid ${T.danger}`, color: T.danger, borderRadius: "10px", padding: "8px 12px", fontSize: "13px", fontWeight: 600, marginBottom: "12px" } }, err),
+        msg && React.createElement("div", { style: { background: T.bg, border: `1px solid ${T.ok}`, color: T.ok, borderRadius: "10px", padding: "8px 12px", fontSize: "13px", fontWeight: 600, marginBottom: "12px" } }, msg),
+        (lista || []).map((u) => {
+          const e = estado(u); const esYo = (u.email || "").toLowerCase() === yo;
+          return React.createElement("div", { key: u.id, style: { border: `1px solid ${T.border}`, borderRadius: "12px", padding: "12px 14px", marginBottom: "10px", opacity: u.desactivada ? 0.7 : 1 } },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", flexWrap: "wrap" } },
+              React.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px", minWidth: 0 } },
+                React.createElement("span", { title: e.t, style: { width: "9px", height: "9px", borderRadius: "50%", background: e.c, flexShrink: 0 } }),
+                React.createElement("span", { style: { fontSize: "14px", fontWeight: 700, wordBreak: "break-all" } }, u.email),
+                esYo && React.createElement("span", { style: { fontSize: "10.5px", fontWeight: 700, color: T.rust, border: `1px solid ${T.border}`, borderRadius: "999px", padding: "1px 7px" } }, "tú · administrador")),
+              React.createElement("div", { style: { display: "flex", gap: "6px", flexWrap: "wrap" } },
+                React.createElement("button", { disabled: busy, onClick: () => { setPwFor(pwFor === u.id ? null : u.id); setPw(""); }, style: btn() }, "Cambiar contraseña"),
+                !esYo && React.createElement("button", { disabled: busy, onClick: async () => { if (u.desactivada || window.confirm(`¿Desactivar ${u.email}? No podrá entrar al cockpit ni a la app de revisiones. Lo que hizo se conserva.`)) await run({ accion: u.desactivada ? "reactivar" : "desactivar", id: u.id }, u.desactivada ? `${u.email} reactivada.` : `${u.email} desactivada. Se cerrará su sesión en menos de 1 hora.`); }, style: btn(u.desactivada ? undefined : "danger") }, u.desactivada ? "Reactivar" : "Desactivar"))),
+            React.createElement("div", { style: { fontSize: "12px", color: T.inkSoft, marginTop: "6px", lineHeight: 1.6 } },
+              React.createElement("span", { style: { color: e.c, fontWeight: 700 } }, e.t),
+              u.visto ? ` · visto ${hace(u.visto)} en ${appNom(u.app)} (${u.device})` : "",
+              React.createElement("br"),
+              `Último inicio de sesión: ${fecha(u.ultimo_login)} · Creada: ${fecha(u.creada)}`,
+              Array.isArray(u.actividad) && u.actividad.length > 1 && React.createElement(React.Fragment, null, React.createElement("br"), "Últimos 30 min: ", u.actividad.map((a) => `${appNom(a.app)} (${a.device}) ${hace(a.visto)}`).join(" · "))),
+            pwFor === u.id && React.createElement("div", { style: { display: "flex", gap: "8px", marginTop: "10px", flexWrap: "wrap" } },
+              React.createElement("input", { type: "text", value: pw, onChange: (ev) => setPw(ev.target.value), placeholder: "Nueva contraseña (mín. 8)", autoComplete: "new-password", style: { ...inp, flex: "1 1 200px" } }),
+              React.createElement("button", { disabled: busy || pw.length < 8, onClick: async () => { if (await run({ accion: "password", id: u.id, password: pw }, `Contraseña de ${u.email} cambiada. Pásasela a esa persona.`)) { setPwFor(null); setPw(""); } }, style: { ...btn("primary"), opacity: pw.length < 8 ? 0.5 : 1 } }, "Guardar contraseña")));
+        }),
+        React.createElement("div", { style: { borderTop: `1px solid ${T.border}`, marginTop: "16px", paddingTop: "14px" } },
+          React.createElement("div", { style: { fontSize: "14px", fontWeight: 700, marginBottom: "8px" } }, "Crear cuenta"),
+          React.createElement("div", { style: { display: "flex", gap: "8px", flexWrap: "wrap" } },
+            React.createElement("input", { type: "email", value: nueva.email, onChange: (ev) => setNueva({ ...nueva, email: ev.target.value }), placeholder: "email@ac-llar.com", autoComplete: "off", style: { ...inp, flex: "2 1 220px" } }),
+            React.createElement("input", { type: "text", value: nueva.password, onChange: (ev) => setNueva({ ...nueva, password: ev.target.value }), placeholder: "Contraseña inicial (mín. 8)", autoComplete: "new-password", style: { ...inp, flex: "1 1 180px" } }),
+            React.createElement("button", { disabled: busy || !nueva.email || nueva.password.length < 8, onClick: async () => { if (await run({ accion: "crear", email: nueva.email, password: nueva.password }, `Cuenta ${nueva.email.trim().toLowerCase()} creada. Ya puede entrar al cockpit y a la app de revisiones.`)) setNueva({ email: "", password: "" }); }, style: { ...btn("primary"), opacity: !nueva.email || nueva.password.length < 8 ? 0.5 : 1 } }, "Crear")),
+          React.createElement("div", { style: { fontSize: "11.5px", color: T.inkFaint, marginTop: "8px" } }, "Las contraseñas no se pueden ver: Supabase no las guarda. Si alguien la olvida, ponle una nueva aquí. Las cuentas nuevas no tienen permisos de administrador."))));
+  }
   function SessionGear() {
     const [open, setOpen] = React.useState(false);
+    const [cuentas, setCuentas] = React.useState(false);
     const ref = React.useRef(null);
     React.useEffect(() => {
       if (!open) return;
@@ -1862,8 +1929,10 @@ const inicioOT =
         React.createElement("div", { style: { fontFamily: F.display, fontSize: "15px", fontWeight: 700, color: T.ink, marginBottom: "12px" } }, "Cuenta"),
         fila("Sesión iniciada", email || "—"),
         fila("Permisos", admin ? "Administrador (copias de seguridad y archivo)" : "Usuario"),
-        fila("Este equipo", C.device || "—", true),
-        React.createElement("button", { onClick: salir, style: { width: "100%", marginTop: "4px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.bg, color: T.danger, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Cerrar sesión")));
+        fila("Este equipo", C.equipo || C.device || "—", true),
+        admin && C.cuentas && React.createElement("button", { onClick: () => { setOpen(false); setCuentas(true); }, style: { width: "100%", marginTop: "2px", marginBottom: "8px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Gestionar cuentas"),
+        React.createElement("button", { onClick: salir, style: { width: "100%", marginTop: "4px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.bg, color: T.danger, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Cerrar sesión")),
+      cuentas && React.createElement(CuentasModal, { onClose: () => setCuentas(false) }));
   }
   const Header = ({ onBackup, onImport, lastBackupAt, backupReminder, onDismissReminder, onToggleWatch, watchStatus, theme, onToggleTheme }) => /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("header", { style: { background: T.bg, padding: "20px 28px 18px" } }, /* @__PURE__ */ React.createElement("div", { style: {
     maxWidth: "1280px",
