@@ -1835,6 +1835,22 @@ const inicioOT =
           i.aviso && React.createElement("div", { style: { fontSize: "12px", fontWeight: 600, color: i.color, marginTop: "6px" } }, i.aviso))),
         React.createElement("div", { style: { fontSize: "11px", color: T.inkFaint } }, "Se actualiza solo cuando llega un archivo nuevo.")));
   }
+  const MECANICOS = ["ALI", "CARLOS", "HUGO"];
+  function MecanicoDialog({ damage, onDone }) {
+    const [m, setM] = React.useState(damage && damage.mecanico || "");
+    React.useEffect(() => { const k = (e) => { if (e.key === "Escape") onDone(null); }; document.addEventListener("keydown", k); return () => document.removeEventListener("keydown", k); }, []);
+    const yaReparado = damageRepair(damage) === "REPARADO";
+    return React.createElement("div", { onMouseDown: (e) => { if (e.target === e.currentTarget) onDone(null); }, style: { position: "fixed", inset: 0, zIndex: 9900, background: "rgba(15,27,46,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" } },
+      React.createElement("div", { role: "dialog", "aria-label": "Mecánico", style: { width: "100%", maxWidth: "380px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: "0 20px 50px rgba(15,27,46,.3)", padding: "20px", fontFamily: F.body, color: T.ink } },
+        React.createElement("div", { style: { fontFamily: F.display, fontSize: "17px", fontWeight: 700 } }, yaReparado ? "Cambiar mecánico" : "¿Quién lo reparó?"),
+        React.createElement("div", { style: { fontSize: "13px", color: T.inkSoft, marginTop: "4px", marginBottom: "14px" } }, `${damage.vehicleId || ""} · ${damage.zona || damage.description || "Daño"}${damage.tipoDano ? " · " + damage.tipoDano : ""}`),
+        React.createElement("select", { autoFocus: true, value: m, onChange: (e) => setM(e.target.value), "aria-label": "Mecánico", style: { width: "100%", padding: "10px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.bg, color: T.ink, fontSize: "15px", fontWeight: 600, fontFamily: F.body } },
+          React.createElement("option", { value: "" }, "Elige mecánico…"),
+          MECANICOS.map((x) => React.createElement("option", { key: x, value: x }, x))),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" } },
+          React.createElement("button", { onClick: () => onDone(null), style: { cursor: "pointer", padding: "8px 14px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Cancelar"),
+          React.createElement("button", { disabled: !m, onClick: () => onDone(m), style: { cursor: m ? "pointer" : "not-allowed", opacity: m ? 1 : 0.5, padding: "8px 14px", borderRadius: "10px", border: `1px solid ${T.ok}`, background: T.ok, color: "#fff", fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, yaReparado ? "Guardar" : "Marcar reparado"))));
+  }
   function CuentasModal({ onClose }) {
     const C = window.acllarCloud || {};
     const [lista, setLista] = React.useState(null);
@@ -2559,6 +2575,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
     onChangeDamageRepair,
     onDeleteDamage,
     onMarkRepaired,
+    onChangeMecanico,
     onSetWorkflowStatus,
     onOpenRentalModal,
     onConfirmArrival,
@@ -2860,7 +2877,8 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         onChangeCargo: (c) => onChangeDamageCargo(d.id, c),
         onChangeRepair: (r) => onChangeDamageRepair(d.id, r),
         onDelete: () => onDeleteDamage(d.id),
-        onMarkRepaired: () => onMarkRepaired(d.id)
+        onMarkRepaired: () => onMarkRepaired(d.id),
+        onChangeMecanico: onChangeMecanico ? () => onChangeMecanico(d.id) : null
       }
     )))), /* @__PURE__ */ React.createElement(
       RepairOrderModal,
@@ -2911,7 +2929,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
     fontWeight: 600,
     fontFamily: mono ? F.mono : F.body
   } }, value));
-  const DamageRow = ({ damage, onEdit, onChangeState, onChangeCargo, onChangeRepair, onDelete, onMarkRepaired }) => {
+  const DamageRow = ({ damage, onEdit, onChangeState, onChangeCargo, onChangeRepair, onDelete, onMarkRepaired, onChangeMecanico }) => {
     const sm = DAMAGE_STATES[damage.state] || DAMAGE_STATES.DETECTADO;
     const grav = damage.gravedad ? GRAVEDAD_THEME[damage.gravedad] : null;
     const isResolved = damageRepair(damage) === "REPARADO";
@@ -2968,7 +2986,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         alignItems: "center",
         gap: "4px",
         fontWeight: !repaired && days >= 5 ? 700 : 400
-      } }, /* @__PURE__ */ React.createElement(Calendar, { size: 9 }), formatDate(added), /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.85 } }, "\xB7 ", repaired ? `reparado` : `${ageText} sin reparar`));
+      } }, /* @__PURE__ */ React.createElement(Calendar, { size: 9 }), formatDate(added), /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.85 } }, "\xB7 ", repaired ? `reparado${damage.mecanico ? " por " + damage.mecanico : ""}` : `${ageText} sin reparar`));
     })()), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: "14px", color: T.ink, fontWeight: 500, lineHeight: 1.4 } }, description || /* @__PURE__ */ React.createElement("span", { style: { color: T.inkFaint, fontStyle: "italic" } }, "Sin descripci\xF3n")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "10px", alignItems: "center", marginTop: "4px", flexWrap: "wrap" } }, damage.tipoReparacion && /* @__PURE__ */ React.createElement("span", { style: {
       fontSize: "10.5px",
       color: T.inkSoft,
@@ -3053,7 +3071,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         },
         Object.keys(REPAIR_STATES).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, REPAIR_STATES[k].label))
       );
-    })()), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "2px", alignItems: "center" } }, !isResolved && /* @__PURE__ */ React.createElement(
+    })()), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: "2px", alignItems: "center" } }, damageRepair(damage) === "REPARADO" && onChangeMecanico && React.createElement("button", { onClick: onChangeMecanico, title: damage.mecanico ? "Reparado por " + damage.mecanico + " · clic para cambiar" : "Asignar el mecánico que lo reparó", style: { background: T.surface, color: damage.mecanico ? T.ok : T.inkSoft, border: `1px ${damage.mecanico ? "solid" : "dashed"} ${T.border}`, padding: "4px 9px", borderRadius: "10px", fontSize: "11px", fontWeight: 700, cursor: "pointer", fontFamily: F.body, whiteSpace: "nowrap" } }, damage.mecanico ? "🔧 " + damage.mecanico : "🔧 Asignar mecánico"), !isResolved && /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onMarkRepaired,
@@ -11214,6 +11232,8 @@ const [globalSede, setGlobalSede] = useState([]);
     const [resWatchLog, setResWatchLog] = useState([]);
     const resImportedFilesRef = useRef(/* @__PURE__ */ new Map());
     const [confirmDialog, setConfirmDialog] = useState(null);
+    const [mecDlg, setMecDlg] = useState(null);
+    const pickMecanico = useCallback((dmg) => new Promise((resolve) => setMecDlg({ dmg, resolve })), []);
     const requestConfirm = useCallback((opts) => new Promise((resolve) => {
       setConfirmDialog({ ...opts, resolve });
     }), []);
@@ -12095,11 +12115,20 @@ No se tocan los da\xF1os \xFAnicos. \xBFContinuar?`,
         return { ...s, damages, vehicles };
       });
     };
-    const handleChangeDamageRepair = (id, newRepair) => {
+    const handleChangeDamageRepair = async (id, newRepair) => {
+      let mecanico = null;
+      if (newRepair === "REPARADO") {
+        const _d = (state.damages || []).find((d) => d.id === id);
+        if (!_d) return;
+        mecanico = await pickMecanico(_d);
+        if (!mecanico) return;
+      }
       setState((s) => {
         const damages = s.damages.map((d) => {
           if (d.id !== id) return d;
           const patch = { ...d, repair: newRepair };
+          if (newRepair === "REPARADO") patch.mecanico = mecanico;
+          else if ("mecanico" in patch) delete patch.mecanico;
           if (newRepair === "REPARADO") patch.repairedAt = nowIso();
           if (newRepair === "REPARADO") patch.state = "REPARADO";
           else if (newRepair === "EN_REPARACION" && d.state !== "ASUMIDO" && d.state !== "VALORADO") patch.state = "EN_REPARACION";
@@ -12120,11 +12149,22 @@ No se tocan los da\xF1os \xFAnicos. \xBFContinuar?`,
       try { const _dmg = (state.damages || []).find((d) => d.id === id); if (_dmg && typeof window !== "undefined" && window.acllarPhotos) window.acllarPhotos.deleteKey(_dmg.vehicleId, damageIdentityKey(_dmg)); } catch (e) {}
       setState((s) => ({ ...s, damages: s.damages.filter((d) => d.id !== id) }));
     };
-    const handleMarkRepaired = (id) => {
+    const handleChangeMecanico = async (id) => {
+      const _d = (state.damages || []).find((d) => d.id === id);
+      if (!_d) return;
+      const m = await pickMecanico(_d);
+      if (!m) return;
+      setState((s) => ({ ...s, damages: s.damages.map((d) => d.id === id ? { ...d, mecanico: m } : d) }));
+    };
+    const handleMarkRepaired = async (id) => {
+      const _dm = (state.damages || []).find((d) => d.id === id);
+      if (!_dm) return;
+      const mecanico = await pickMecanico(_dm);
+      if (!mecanico) return;
       try { const _dmg = (state.damages || []).find((d) => d.id === id); if (_dmg && typeof window !== "undefined" && window.acllarPhotos) window.acllarPhotos.deleteKey(_dmg.vehicleId, damageIdentityKey(_dmg)); } catch (e) {}
       setState((s) => {
         const damages = s.damages.map(
-          (d) => d.id === id ? { ...d, state: "REPARADO", repairedAt: nowIso() } : d
+          (d) => d.id === id ? { ...d, state: "REPARADO", repairedAt: nowIso(), mecanico } : d
         );
         const damage = s.damages.find((d) => d.id === id);
         if (!damage) return { ...s, damages };
@@ -13956,6 +13996,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         onChangeDamageRepair: handleChangeDamageRepair,
         onDeleteDamage: handleDeleteDamage,
         onMarkRepaired: handleMarkRepaired,
+        onChangeMecanico: handleChangeMecanico,
         onSetWorkflowStatus: handleSetWorkflowStatus,
         onOpenRentalModal: (v) => setRentalModalVehicle(v),
         onEditArrivalDate: handleEditArrivalDate,
@@ -14141,7 +14182,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         onConfirm: () => closeConfirm(true),
         onCancel: () => closeConfirm(false)
       }
-    )));
+    ), mecDlg && React.createElement(MecanicoDialog, { damage: mecDlg.dmg, onDone: (m) => { mecDlg.resolve(m); setMecDlg(null); } })));
   }
     (function mountApp() {
     var rootEl = document.getElementById("root");
