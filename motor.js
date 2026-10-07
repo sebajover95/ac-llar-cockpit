@@ -2592,6 +2592,8 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
     const [filterCargo, setFilterCargo] = useState("todos");
     const [filterRepair, setFilterRepair] = useState("activos");
     const [filterGravedad, setFilterGravedad] = useState("todas");
+    const [ordenDanos, setOrdenDanos] = useState(() => { try { return localStorage.getItem("acllar_orden_danos") || "gravedad"; } catch (e) { return "gravedad"; } });
+    const cambiarOrden = (o) => { setOrdenDanos(o); try { localStorage.setItem("acllar_orden_danos", o); } catch (e) {} };
     const [repairOrderOpen, setRepairOrderOpen] = useState(false);
     const [editArrival, setEditArrival] = useState(false);
     const [arrivalDraft, setArrivalDraft] = useState("");
@@ -2612,6 +2614,11 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
       if (filterRepair === "activos") arr = arr.filter((d) => damageRepair(d) !== "REPARADO");
       else if (filterRepair !== "todos") arr = arr.filter((d) => damageRepair(d) === filterRepair);
       if (filterGravedad !== "todas") arr = arr.filter((d) => d.gravedad === filterGravedad);
+      if (ordenDanos === "recientes" || ordenDanos === "antiguos") {
+        const t = (d) => Date.parse(d.importedAt || d.detectedAt || d.createdAt || "") || 0;
+        const dir = ordenDanos === "recientes" ? -1 : 1;
+        return arr.sort((a, b) => (t(a) - t(b)) * dir || (a.id || "").localeCompare(b.id || "", void 0, { numeric: true }));
+      }
       return arr.sort((a, b) => {
         const gA = GRAVEDAD_ORDER[a.gravedad] || 9;
         const gB = GRAVEDAD_ORDER[b.gravedad] || 9;
@@ -2621,7 +2628,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         if (sA !== sB) return sA - sB;
         return (a.id || "").localeCompare(b.id || "", void 0, { numeric: true });
       });
-    }, [damages, filterCargo, filterRepair, filterGravedad]);
+    }, [damages, filterCargo, filterRepair, filterGravedad, ordenDanos]);
     return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2850,7 +2857,9 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         " ",
         count > 0 && /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.75, marginLeft: 2 } }, "\xB7 ", count)
       );
-    }))), damages.length === 0 ? /* @__PURE__ */ React.createElement(
+    })), React.createElement("div", { style: { height: "20px", width: "1px", background: T.border } }), React.createElement("div", { style: { display: "flex", gap: "4px", alignItems: "center", flexWrap: "wrap" } },
+      React.createElement("span", { style: { fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, color: T.inkFaint, marginRight: "4px" } }, "Orden:"),
+      [["gravedad", "Gravedad"], ["recientes", "Más recientes"], ["antiguos", "Más antiguos"]].map(([id, label]) => React.createElement(FilterChip, { key: id, active: ordenDanos === id, onClick: () => cambiarOrden(id) }, label)))), damages.length === 0 ? /* @__PURE__ */ React.createElement(
       EmptyState,
       {
         icon: AlertTriangle,
