@@ -1835,7 +1835,7 @@ const inicioOT =
           i.aviso && React.createElement("div", { style: { fontSize: "12px", fontWeight: 600, color: i.color, marginTop: "6px" } }, i.aviso))),
         React.createElement("div", { style: { fontSize: "11px", color: T.inkFaint } }, "Se actualiza solo cuando llega un archivo nuevo.")));
   }
-  const MECANICOS = ["ALI", "CARLOS", "HUGO"];
+  const MECANICOS = ["ALI", "CARLOS", "HUGO", "AGENTE EXTERNO"];
   function MecanicoDialog({ damage, onDone }) {
     const [m, setM] = React.useState(damage && damage.mecanico || "");
     React.useEffect(() => { const k = (e) => { if (e.key === "Escape") onDone(null); }; document.addEventListener("keydown", k); return () => document.removeEventListener("keydown", k); }, []);
