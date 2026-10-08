@@ -617,6 +617,16 @@
       return data || [];
     },
     // pedir=true: abrir el selector para (re)elegir la carpeta.
+    // Elegir (o cambiar) la carpeta de OneDrive sin archivar todavía.
+    async elegirCarpeta() {
+      if (!esAdmin()) throw new Error("Solo el administrador puede archivar.");
+      const dir = await window.showDirectoryPicker({ mode: "readwrite", id: "acllar-onedrive" });
+      await hSet("onedrive", dir);
+      let prev = {};
+      try { const r = await window.storage.get("archivo_onedrive"); prev = r && r.value ? JSON.parse(r.value) : {}; } catch (e) {}
+      await window.storage.set("archivo_onedrive", JSON.stringify({ ...prev, carpeta: dir.name, carpetaCambiadaAt: new Date().toISOString(), por: who() }));
+      return dir.name;
+    },
     async archivar({ pedir = false, onProgress } = {}) {
       if (!esAdmin()) throw new Error("Solo el administrador puede archivar.");
       let dir = pedir ? null : await hGet("onedrive");

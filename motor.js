@@ -11191,7 +11191,7 @@ const parseOTDateTime = (value) => {
     } }, isEnAlquiler ? `Marcar EN USO ${Object.keys(parsed.byVehicle).length} veh\xEDculos` : `Aplicar fechas a ${Object.keys(parsed.byVehicle).length} veh\xEDculos`)))));
   }
   // ===== Copia de seguridad de las OT en OneDrive =====
-  function ArchivePanel({ info, onArchive }) {
+  function ArchivePanel({ info, onArchive, onChangeFolder }) {
     if (!info) return null;
     const h = React.createElement;
     const dias = info.lastAt ? Math.floor((Date.now() - new Date(info.lastAt).getTime()) / 864e5) : null;
@@ -11204,7 +11204,9 @@ const parseOTDateTime = (value) => {
       info.msg && h("span", { style: { color: T.inkSoft } }, info.msg),
       h("div", { style: { flex: 1 } }),
       info.soportado
-        ? h(Btn, { variant: warn ? "primary" : "secondary", sm: true, disabled: info.busy, onClick: (e) => onArchive(e && e.shiftKey) }, info.busy ? "Archivando…" : "Archivar ahora")
+        ? h("div", { style: { display: "flex", gap: "6px" } },
+            onChangeFolder && h(Btn, { variant: "secondary", sm: true, disabled: info.busy, onClick: onChangeFolder, title: "Elegir otra carpeta donde guardar las OT archivadas" }, "Cambiar carpeta"),
+            h(Btn, { variant: warn ? "primary" : "secondary", sm: true, disabled: info.busy, onClick: (e) => onArchive(e && e.shiftKey) }, info.busy ? "Archivando…" : "Archivar ahora"))
         : h("span", { style: { fontSize: "12px", color: T.inkSoft, fontStyle: "italic" } }, "se archiva desde el PC"));
   }
   // ===== OT pendientes de confirmar (llegan de la app de revisiones en la nube) =====
@@ -12911,6 +12913,15 @@ const scanResWatchFolder = async (handle) => {
       window.addEventListener("acllar-remote-update", onKv);
       return () => { clearInterval(iv); window.removeEventListener("acllar-revisiones", on); window.removeEventListener("acllar-remote-update", onKv); };
     }, [loaded]);
+    const doChangeFolder = async () => {
+      try {
+        const nombre = await window.acllarCloud.archivo.elegirCarpeta();
+        await loadArch();
+        await requestConfirm({ title: "Carpeta cambiada", message: `A partir de ahora las OT se archivarán en "${nombre}". Las OT que ya archivaste siguen en la carpeta anterior: si quieres tenerlas todas juntas, muévelas tú desde el Explorador. La numeración no cambia.`, confirmLabel: "Entendido" });
+      } catch (e) {
+        if (!(e && e.name === "AbortError")) await requestConfirm({ title: "No se pudo cambiar la carpeta", message: String(e && e.message || e), confirmLabel: "Entendido" });
+      }
+    };
     const doArchive = async (elegirOtra) => {
       setArchInfo((p) => ({ ...p, busy: true, msg: "" }));
       try {
@@ -14053,7 +14064,7 @@ Backup: ${(parsed.vehicles || []).length} veh\xEDculos, ${(parsed.damages || [])
         },
         s === "todas" ? "Todas" : s
       );
-    }), globalSede.length > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: T.inkSoft, fontStyle: "italic", marginLeft: "4px" } }, "mostrando ", globalSede.length === 1 ? `solo ${globalSede[0]}` : globalSede.join(" + "))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: "1280px", margin: "0 auto", padding: "28px 28px 60px" } }, activeTab === "today" && /* @__PURE__ */ (window.acllarEsAdmin && window.acllarEsAdmin()) && React.createElement(ArchivePanel, { info: archInfo, onArchive: doArchive }), activeTab === "today" && /* @__PURE__ */ React.createElement(RevPendPanel, { items: revPend, openingId: revOpening, onOpen: openRevision }), activeTab === "today" && /* @__PURE__ */ React.createElement(
+    }), globalSede.length > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: "11px", color: T.inkSoft, fontStyle: "italic", marginLeft: "4px" } }, "mostrando ", globalSede.length === 1 ? `solo ${globalSede[0]}` : globalSede.join(" + "))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: "1280px", margin: "0 auto", padding: "28px 28px 60px" } }, activeTab === "today" && /* @__PURE__ */ (window.acllarEsAdmin && window.acllarEsAdmin()) && React.createElement(ArchivePanel, { info: archInfo, onArchive: doArchive, onChangeFolder: doChangeFolder }), activeTab === "today" && /* @__PURE__ */ React.createElement(RevPendPanel, { items: revPend, openingId: revOpening, onOpen: openRevision }), activeTab === "today" && /* @__PURE__ */ React.createElement(
       TodayView,
       {
         state: activeState,
