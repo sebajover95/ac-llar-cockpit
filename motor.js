@@ -1409,6 +1409,7 @@ const inicioOT =
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        "data-modal": "1",
         onClick: onCancel,
         style: {
           position: "fixed",
@@ -1613,6 +1614,7 @@ const inicioOT =
     return /* @__PURE__ */ React.createElement(
       "div",
       {
+        "data-modal": "1",
         onClick: onClose,
         style: {
           position: "fixed",
@@ -1836,9 +1838,80 @@ const inicioOT =
         React.createElement("div", { style: { fontSize: "11px", color: T.inkFaint } }, "Se actualiza solo cuando llega un archivo nuevo.")));
   }
   const MECANICOS = ["ALI", "CARLOS", "HUGO", "AGENTE EXTERNO"];
+  // ---------- Atajos de teclado (por equipo, en localStorage) ----------
+  const ATAJOS_DEF = { activos: true, estado: { DETECTADO: "1", EN_REPARACION: "2", REPARADO: "3" }, mecanico: { "ALI": "1", "CARLOS": "2", "HUGO": "3", "AGENTE EXTERNO": "4" } };
+  const getAtajos = () => {
+    try { const j = JSON.parse(localStorage.getItem("acllar_atajos") || "null"); if (j) return { activos: j.activos !== false, estado: { ...ATAJOS_DEF.estado, ...(j.estado || {}) }, mecanico: { ...ATAJOS_DEF.mecanico, ...(j.mecanico || {}) } }; } catch (e) {}
+    return JSON.parse(JSON.stringify(ATAJOS_DEF));
+  };
+  const setAtajos = (a) => { try { localStorage.setItem("acllar_atajos", JSON.stringify(a)); } catch (e) {} try { window.dispatchEvent(new Event("acllar-atajos")); } catch (e) {} };
+  const teclaDe = (e) => (e.key && e.key.length === 1 ? e.key.toUpperCase() : "");
+  const escribiendo = (e) => { const t = e.target; if (!t) return false; const tag = (t.tagName || "").toUpperCase(); return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || t.isContentEditable; };
+  const avisoAtajo = (texto) => {
+    try {
+      let el = document.getElementById("acllar-aviso-atajo");
+      if (!el) { el = document.createElement("div"); el.id = "acllar-aviso-atajo"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+      Object.assign(el.style, { position: "fixed", left: "50%", bottom: "26px", transform: "translateX(-50%)", zIndex: 9990, background: T.ink, color: T.bg, padding: "9px 16px", borderRadius: "999px", font: "700 13px Manrope, system-ui, sans-serif", boxShadow: "0 8px 24px rgba(15,27,46,.25)", transition: "opacity .2s", opacity: "1", pointerEvents: "none" });
+      el.textContent = "⌨ " + texto;
+      clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = "0"; }, 2200);
+    } catch (e) {}
+  };
+  function AtajosModal({ onClose }) {
+    const [a, setA] = React.useState(getAtajos);
+    const [esperando, setEsperando] = React.useState(null); // [grupo, clave]
+    const [err, setErr] = React.useState("");
+    const [ok, setOk] = React.useState("");
+    React.useEffect(() => {
+      const k = (e) => {
+        if (esperando) {
+          e.preventDefault(); e.stopPropagation();
+          if (e.key === "Escape") { setEsperando(null); return; }
+          const t = teclaDe(e); if (!t || t === " ") return;
+          const [g, clave] = esperando;
+          const choque = Object.entries(a[g]).find(([c, v]) => c !== clave && v === t);
+          if (choque) { setErr(`La tecla ${t} ya la usa "${g === "estado" ? REPAIR_STATES[choque[0]].label : choque[0]}". Elige otra o cambia primero esa.`); return; }
+          const n = { ...a, [g]: { ...a[g], [clave]: t } }; setA(n); setAtajos(n); setEsperando(null); setErr(""); setOk("Guardado.");
+          return;
+        }
+        if (e.key === "Escape") onClose();
+      };
+      document.addEventListener("keydown", k, true); return () => document.removeEventListener("keydown", k, true);
+    }, [esperando, a]);
+    const tecla = (g, clave) => { const on = esperando && esperando[0] === g && esperando[1] === clave; return React.createElement("button", { onClick: () => { setEsperando([g, clave]); setErr(""); setOk(""); }, title: "Pulsa para cambiar la tecla", style: { minWidth: "64px", cursor: "pointer", padding: "6px 10px", borderRadius: "9px", border: `1px solid ${on ? T.rust : T.border}`, background: on ? T.rust : T.bg, color: on ? "#fff" : T.ink, fontFamily: F.mono, fontWeight: 700, fontSize: "14px" } }, on ? "pulsa…" : a[g][clave]); };
+    const fila = (g, clave, label) => React.createElement("div", { key: g + clave, style: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: `1px solid ${T.border}` } }, React.createElement("span", { style: { fontSize: "13.5px", fontWeight: 600 } }, label), tecla(g, clave));
+    const titulo = (t, sub) => React.createElement("div", { style: { marginTop: "16px", marginBottom: "4px" } }, React.createElement("div", { style: { fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 700, color: T.inkFaint } }, t), sub && React.createElement("div", { style: { fontSize: "12px", color: T.inkSoft, marginTop: "2px" } }, sub));
+    return React.createElement("div", { "data-modal": "1", onMouseDown: (e) => { if (e.target === e.currentTarget) onClose(); }, style: { position: "fixed", inset: 0, zIndex: 9800, background: "rgba(15,27,46,.45)", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "8vh 16px", overflowY: "auto" } },
+      React.createElement("div", { role: "dialog", "aria-label": "Atajos de teclado", style: { width: "100%", maxWidth: "460px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: "0 20px 50px rgba(15,27,46,.3)", padding: "22px", fontFamily: F.body, color: T.ink } },
+        React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+          React.createElement("div", { style: { fontFamily: F.display, fontSize: "19px", fontWeight: 700 } }, "Atajos de teclado"),
+          React.createElement("button", { onClick: onClose, "aria-label": "Cerrar", style: { cursor: "pointer", padding: "6px 10px", borderRadius: "9px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700 } }, "✕")),
+        React.createElement("label", { style: { display: "flex", alignItems: "center", gap: "8px", marginTop: "12px", fontSize: "13.5px", fontWeight: 600, cursor: "pointer" } },
+          React.createElement("input", { type: "checkbox", checked: a.activos, onChange: (e) => { const n = { ...a, activos: e.target.checked }; setA(n); setAtajos(n); } }), "Atajos activados"),
+        titulo("Estado de reparación", "En la lista de daños de un vehículo: pon el ratón sobre un daño (o muévete con ↑ ↓) y pulsa la tecla."),
+        Object.keys(REPAIR_STATES).map((k) => fila("estado", k, REPAIR_STATES[k].label)),
+        titulo("Quién lo reparó", "En la ventana \"¿Quién lo reparó?\": la tecla guarda directamente."),
+        MECANICOS.map((m) => fila("mecanico", m, m)),
+        err && React.createElement("div", { style: { marginTop: "10px", color: T.danger, fontSize: "12.5px", fontWeight: 600 } }, err),
+        ok && !err && React.createElement("div", { style: { marginTop: "10px", color: T.ok, fontSize: "12.5px", fontWeight: 600 } }, ok),
+        React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", gap: "10px" } },
+          React.createElement("div", { style: { fontSize: "11.5px", color: T.inkFaint } }, "Se guardan en este ordenador. No funcionan mientras escribes en un campo de texto."),
+          React.createElement("button", { onClick: () => { const n = JSON.parse(JSON.stringify(ATAJOS_DEF)); setA(n); setAtajos(n); setErr(""); setOk("Restablecidos."); }, style: { cursor: "pointer", padding: "7px 12px", borderRadius: "9px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700, fontSize: "12.5px", whiteSpace: "nowrap" } }, "Restablecer"))));
+  }
   function MecanicoDialog({ damage, onDone }) {
     const [m, setM] = React.useState(damage && damage.mecanico || "");
-    React.useEffect(() => { const k = (e) => { if (e.key === "Escape") onDone(null); }; document.addEventListener("keydown", k); return () => document.removeEventListener("keydown", k); }, []);
+    const at = getAtajos();
+    const mRef = React.useRef(m); mRef.current = m;
+    React.useEffect(() => {
+      const k = (e) => {
+        if (e.key === "Escape") { e.preventDefault(); onDone(null); return; }
+        if (e.key === "Enter" && mRef.current) { e.preventDefault(); onDone(mRef.current); return; }
+        if (!at.activos || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (e.target && (e.target.tagName || "").toUpperCase() === "SELECT" && /^Arrow/.test(e.key)) return;
+        const t = teclaDe(e); const hit = t && MECANICOS.find((x) => at.mecanico[x] === t);
+        if (hit) { e.preventDefault(); e.stopPropagation(); onDone(hit); }
+      };
+      document.addEventListener("keydown", k, true); return () => document.removeEventListener("keydown", k, true);
+    }, []);
     const yaReparado = damageRepair(damage) === "REPARADO";
     return React.createElement("div", { onMouseDown: (e) => { if (e.target === e.currentTarget) onDone(null); }, style: { position: "fixed", inset: 0, zIndex: 9900, background: "rgba(15,27,46,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" } },
       React.createElement("div", { role: "dialog", "aria-label": "Mecánico", style: { width: "100%", maxWidth: "380px", background: T.surface, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: "0 20px 50px rgba(15,27,46,.3)", padding: "20px", fontFamily: F.body, color: T.ink } },
@@ -1846,7 +1919,8 @@ const inicioOT =
         React.createElement("div", { style: { fontSize: "13px", color: T.inkSoft, marginTop: "4px", marginBottom: "14px" } }, `${damage.vehicleId || ""} · ${damage.zona || damage.description || "Daño"}${damage.tipoDano ? " · " + damage.tipoDano : ""}`),
         React.createElement("select", { autoFocus: true, value: m, onChange: (e) => setM(e.target.value), "aria-label": "Mecánico", style: { width: "100%", padding: "10px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.bg, color: T.ink, fontSize: "15px", fontWeight: 600, fontFamily: F.body } },
           React.createElement("option", { value: "" }, "Elige mecánico…"),
-          MECANICOS.map((x) => React.createElement("option", { key: x, value: x }, x))),
+          MECANICOS.map((x) => React.createElement("option", { key: x, value: x }, (at.activos ? at.mecanico[x] + " · " : "") + x))),
+        at.activos && React.createElement("div", { style: { fontSize: "11.5px", color: T.inkFaint, marginTop: "8px" } }, "Atajo: pulsa " + MECANICOS.map((x) => at.mecanico[x] + " " + x).join(" · ") + " · Esc cancela"),
         React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" } },
           React.createElement("button", { onClick: () => onDone(null), style: { cursor: "pointer", padding: "8px 14px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Cancelar"),
           React.createElement("button", { disabled: !m, onClick: () => onDone(m), style: { cursor: m ? "pointer" : "not-allowed", opacity: m ? 1 : 0.5, padding: "8px 14px", borderRadius: "10px", border: `1px solid ${T.ok}`, background: T.ok, color: "#fff", fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, yaReparado ? "Guardar" : "Marcar reparado"))));
@@ -1920,6 +1994,7 @@ const inicioOT =
   function SessionGear() {
     const [open, setOpen] = React.useState(false);
     const [cuentas, setCuentas] = React.useState(false);
+    const [atajos, setAtajosOpen] = React.useState(false);
     const ref = React.useRef(null);
     React.useEffect(() => {
       if (!open) return;
@@ -1946,9 +2021,11 @@ const inicioOT =
         fila("Sesión iniciada", email || "—"),
         fila("Permisos", admin ? "Administrador (copias de seguridad y archivo)" : "Usuario"),
         fila("Este equipo", C.equipo || C.device || "—", true),
+        React.createElement("button", { onClick: () => { setOpen(false); setAtajosOpen(true); }, style: { width: "100%", marginTop: "2px", marginBottom: "8px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "⌨ Atajos de teclado"),
         admin && C.cuentas && React.createElement("button", { onClick: () => { setOpen(false); setCuentas(true); }, style: { width: "100%", marginTop: "2px", marginBottom: "8px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.surface, color: T.ink, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Gestionar cuentas"),
         React.createElement("button", { onClick: salir, style: { width: "100%", marginTop: "4px", cursor: "pointer", padding: "9px 12px", borderRadius: "10px", border: `1px solid ${T.border}`, background: T.bg, color: T.danger, fontWeight: 700, fontSize: "13px", fontFamily: F.body } }, "Cerrar sesión")),
-      cuentas && React.createElement(CuentasModal, { onClose: () => setCuentas(false) }));
+      cuentas && React.createElement(CuentasModal, { onClose: () => setCuentas(false) }),
+      atajos && React.createElement(AtajosModal, { onClose: () => setAtajosOpen(false) }));
   }
   const Header = ({ onBackup, onImport, lastBackupAt, backupReminder, onDismissReminder, onToggleWatch, watchStatus, theme, onToggleTheme }) => /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("header", { style: { background: T.bg, padding: "20px 28px 18px" } }, /* @__PURE__ */ React.createElement("div", { style: {
     maxWidth: "1280px",
@@ -2594,6 +2671,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
     const [filterGravedad, setFilterGravedad] = useState("todas");
     const [ordenDanos, setOrdenDanos] = useState(() => { try { return localStorage.getItem("acllar_orden_danos") || "gravedad"; } catch (e) { return "gravedad"; } });
     const cambiarOrden = (o) => { setOrdenDanos(o); try { localStorage.setItem("acllar_orden_danos", o); } catch (e) {} };
+    const [activoId, setActivoId] = useState(null);
     const [repairOrderOpen, setRepairOrderOpen] = useState(false);
     const [editArrival, setEditArrival] = useState(false);
     const [arrivalDraft, setArrivalDraft] = useState("");
@@ -2629,6 +2707,33 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         return (a.id || "").localeCompare(b.id || "", void 0, { numeric: true });
       });
     }, [damages, filterCargo, filterRepair, filterGravedad, ordenDanos]);
+    const visRef = React.useRef(visibleDamages); visRef.current = visibleDamages;
+    const actRef = React.useRef(activoId); actRef.current = activoId;
+    const repRef = React.useRef(onChangeDamageRepair); repRef.current = onChangeDamageRepair;
+    React.useEffect(() => {
+      const k = (e) => {
+        if (e.defaultPrevented || escribiendo(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+        if (document.querySelector('[role=dialog], [data-modal]')) return;
+        const at = getAtajos(); if (!at.activos) return;
+        const lista = visRef.current || []; if (!lista.length) return;
+        const idx = lista.findIndex((d) => d.id === actRef.current);
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+          e.preventDefault();
+          const ni = idx < 0 ? 0 : Math.max(0, Math.min(lista.length - 1, idx + (e.key === "ArrowDown" ? 1 : -1)));
+          setActivoId(lista[ni].id);
+          setTimeout(() => { const el = document.querySelector(`[data-dano-id="${lista[ni].id}"]`); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); }, 0);
+          return;
+        }
+        const t = teclaDe(e); if (!t) return;
+        const st = Object.keys(at.estado).find((x) => at.estado[x] === t); if (!st) return;
+        const d = idx >= 0 ? lista[idx] : null;
+        if (!d) { avisoAtajo("Pon el ratón sobre un daño (o usa ↑ ↓) y vuelve a pulsar"); return; }
+        e.preventDefault();
+        if (damageRepair(d) === st) { avisoAtajo(`${d.id} ya está en ${REPAIR_STATES[st].label}`); return; }
+        Promise.resolve(repRef.current(d.id, st)).then((r) => { if (r === false) return; avisoAtajo(`${d.id} → ${REPAIR_STATES[st].label}${typeof r === "string" ? " por " + r : ""}`); });
+      };
+      document.addEventListener("keydown", k); return () => document.removeEventListener("keydown", k);
+    }, []);
     return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -2876,7 +2981,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         message: "Ajust\xE1 los filtros para ver m\xE1s resultados.",
         small: true
       }
-    ) : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "6px" } }, visibleDamages.map((d) => /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: "6px" } }, visibleDamages.map((d) => React.createElement("div", { key: d.id, "data-dano-id": d.id, onMouseEnter: () => setActivoId(d.id), style: { borderRadius: "14px", outline: activoId === d.id ? `2px solid ${T.rust}` : "2px solid transparent", outlineOffset: "1px", transition: "outline-color 80ms" } }, /* @__PURE__ */ React.createElement(
       DamageRow,
       {
         key: d.id,
@@ -2889,7 +2994,7 @@ Los da\xF1os no se eliminan ni se marcan como reparados \u2014 quedan registrado
         onMarkRepaired: () => onMarkRepaired(d.id),
         onChangeMecanico: onChangeMecanico ? () => onChangeMecanico(d.id) : null
       }
-    )))), /* @__PURE__ */ React.createElement(
+    ))))), /* @__PURE__ */ React.createElement(
       RepairOrderModal,
       {
         open: repairOrderOpen,
@@ -12128,9 +12233,9 @@ No se tocan los da\xF1os \xFAnicos. \xBFContinuar?`,
       let mecanico = null;
       if (newRepair === "REPARADO") {
         const _d = (state.damages || []).find((d) => d.id === id);
-        if (!_d) return;
+        if (!_d) return false;
         mecanico = await pickMecanico(_d);
-        if (!mecanico) return;
+        if (!mecanico) return false;
       }
       setState((s) => {
         const damages = s.damages.map((d) => {
@@ -12145,6 +12250,7 @@ No se tocan los da\xF1os \xFAnicos. \xBFContinuar?`,
         });
         return { ...s, damages };
       });
+      return mecanico || true;
     };
     const handleDeleteDamage = async (id) => {
       const ok = await requestConfirm({
